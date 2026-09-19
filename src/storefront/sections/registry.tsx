@@ -2,12 +2,14 @@ import type { ComponentType } from "react";
 import type { HomepageSection, SectionType } from "../contracts";
 import { HeroSection } from "./hero";
 import { GroupedServicesSection, ServicesSection, StatsSection } from "./content-sections";
+import { FeaturedCollectionSection } from "./featured-collection";
 
 export type SectionRendererProps = { section: HomepageSection; preview: boolean };
 type VersionedRenderer = { version: 1; component: ComponentType<SectionRendererProps> };
 
 const sectionRegistry: Partial<Record<SectionType, VersionedRenderer>> = {
   hero: { version: 1, component: HeroSection },
+  "featured-collection": { version: 1, component: FeaturedCollectionSection },
   stats: { version: 1, component: StatsSection },
   services: { version: 1, component: ServicesSection },
   "services-showcase-grouped": { version: 1, component: GroupedServicesSection },

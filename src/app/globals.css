@@ -58,6 +58,12 @@ button, input { font: inherit; }
 .sf-section-heading { max-width: 720px; }
 .sf-section-heading h2 { color: var(--retail-text); font: 700 calc(32px * var(--retail-text-scale))/1.15 var(--retail-heading-font); letter-spacing: -.035em; }
 .sf-section-heading p { margin-top: 10px; color: var(--retail-textMuted); line-height: 1.65; }
+.sf-featured-collection { display: grid; grid-template-columns: minmax(240px, .72fr) minmax(0, 1.8fr); align-items: center; gap: 38px; overflow: hidden; padding: 34px; background: color-mix(in srgb, var(--retail-secondary) 58%, var(--retail-surface)); border-radius: var(--retail-radius); }
+.sf-featured-collection h2 { color: var(--retail-text); font: 700 calc(36px * var(--retail-text-scale))/1.05 var(--retail-heading-font); letter-spacing: -.04em; }
+.sf-featured-collection p { margin-top: 14px; color: var(--retail-textMuted); line-height: 1.6; }
+.sf-featured-collection img { display: block; width: 100%; min-height: 250px; max-height: 360px; object-fit: cover; border-radius: var(--retail-radius); }
+.sf-featured-collection[data-layout="compact"] { padding: 24px; }
+.sf-featured-collection[data-layout="compact"] img { min-height: 200px; }
 .sf-heading-with-action { display: flex; align-items: end; justify-content: space-between; gap: 28px; margin-bottom: 28px; }
 .sf-heading-with-action .sf-secondary-button { flex: none; margin-top: 0; }
 .sf-stats { position: relative; isolation: isolate; display: grid; grid-template-columns: minmax(220px, 1fr) minmax(0, 1.35fr); gap: 36px; overflow: hidden; padding: 36px; color: var(--retail-onPrimary); background: var(--retail-primary); border-radius: var(--retail-radius); }
@@ -115,6 +121,8 @@ button, input { font: inherit; }
   .sf-hero h1 { max-width: 340px; font-size: calc(42px * var(--retail-text-scale)); }
   .sf-hero p { max-width: 320px; font-size: .94em; }
   .sf-heading-with-action { align-items: start; flex-direction: column; }
+  .sf-featured-collection { grid-template-columns: 1fr; gap: 24px; padding: 24px; }
+  .sf-featured-collection img { min-height: 210px; }
   .sf-stats { grid-template-columns: 1fr; padding: 24px; }
   .sf-stat-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .sf-service-grid { grid-template-columns: 1fr; }
