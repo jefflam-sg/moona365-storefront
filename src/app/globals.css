@@ -71,6 +71,11 @@ button, input { font: inherit; }
 .sf-category-card > div, .sf-product-copy { padding: 18px; }
 .sf-category-card h3, .sf-product-card h3 { font: 700 calc(18px * var(--retail-text-scale))/1.25 var(--retail-heading-font); }
 .sf-category-card p, .sf-product-card p { margin-top: 7px; color: var(--retail-textMuted); font-size: .9em; line-height: 1.45; }
+.sf-category-carousel .sf-category-grid { grid-template-columns: repeat(auto-fit,minmax(130px,1fr)); align-items:start; }
+.sf-category-carousel .sf-category-card { overflow:visible; min-width:0; background:transparent; border:0; border-radius:0; box-shadow:none; text-align:center; }
+.sf-category-carousel .sf-category-card > :is(img,.sf-catalogue-placeholder) { width:min(100%,180px); height:auto; aspect-ratio:1; margin-inline:auto; border:1px solid var(--retail-border); border-radius:50%; object-fit:cover; box-shadow:0 8px 24px color-mix(in srgb,var(--retail-text) 7%,transparent); }
+.sf-category-carousel .sf-category-card > div { padding:14px 6px 0; }
+.sf-category-carousel .sf-category-card p { display:none; }
 .sf-product-copy > div { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 15px; }
 .sf-product-copy strong { color: var(--retail-primary); }
 .sf-product-copy span { color: var(--retail-textMuted); font-size: .78em; }
@@ -148,6 +153,8 @@ button, input { font: inherit; }
   .sf-featured-collection { grid-template-columns: 1fr; gap: 24px; padding: 24px; }
   .sf-featured-collection img { min-height: 210px; }
   .sf-category-grid, .sf-product-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .sf-category-carousel .sf-category-grid { grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px 12px; }
+  .sf-category-carousel .sf-category-card h3 { font-size:calc(15px * var(--retail-text-scale)); }
   .sf-stats { grid-template-columns: 1fr; padding: 24px; }
   .sf-stat-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .sf-service-grid { grid-template-columns: 1fr; }
@@ -160,6 +167,7 @@ button, input { font: inherit; }
 
 @media (max-width: 560px) {
   .sf-category-grid, .sf-product-grid { grid-template-columns: 1fr; }
+  .sf-category-carousel .sf-category-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
 }
 
 @media (prefers-reduced-motion: reduce) { .sf-primary-button, .sf-secondary-button, .sf-service-card, .sf-grouped-card { transition: none; } }
