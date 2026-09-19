@@ -37,6 +37,25 @@ async function getJson(url, host, validator, fetchImpl) {
   return validator(value, host) ? value : null;
 }
 
+export async function loadPublicCollections(host, options = {}) {
+  const baseUrl = options.baseUrl ?? process.env.MOONA365_API_URL;
+  if (!baseUrl) throw new Error("MOONA365_API_URL is required");
+  const fetchImpl = options.fetchImpl ?? fetch;
+  const root = baseUrl.replace(/\/$/, "");
+  return getJson(`${root}/public/storefront/v1/collections?host=${encodeURIComponent(host)}`, host, isCollectionsResponse, fetchImpl);
+}
+
+export async function loadPublicProducts(host, query, options = {}) {
+  const baseUrl = options.baseUrl ?? process.env.MOONA365_API_URL;
+  if (!baseUrl) throw new Error("MOONA365_API_URL is required");
+  const fetchImpl = options.fetchImpl ?? fetch;
+  const root = baseUrl.replace(/\/$/, "");
+  const params = new URLSearchParams({ host, source: query.source, limit: String(query.limit ?? 12) });
+  if (query.collectionId) params.set("collectionId", query.collectionId);
+  for (const id of query.productIds ?? []) params.append("productId", id);
+  return getJson(`${root}/public/storefront/v1/products?${params}`, host, isProductsResponse, fetchImpl);
+}
+
 export async function loadHomepageCatalogue(host, snapshot, options = {}) {
   const baseUrl = options.baseUrl ?? process.env.MOONA365_API_URL;
   if (!baseUrl) throw new Error("MOONA365_API_URL is required");

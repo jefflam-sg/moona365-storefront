@@ -3,6 +3,7 @@
 /* Tenant-configured catalogue images are validated HTTPS/path URLs at the API boundary. */
 /* eslint-disable @next/next/no-img-element */
 import { useState } from "react";
+import Link from "next/link";
 import type { HomepageCatalogue, HomepageSection, PublicProduct } from "../contracts";
 import { safeImageSource } from "../safe-values";
 import { SectionAction } from "./section-action";
@@ -21,7 +22,7 @@ export function CategoriesSection({ section, preview, catalogue }: { section: Ho
   const collections = catalogue.collections.slice(0, section.limit);
   return <section className="sf-section sf-categories" data-layout={section.layout}>
     <div className="sf-heading-with-action"><div className="sf-section-heading">{section.eyebrow && <span className="sf-eyebrow">{section.eyebrow}</span>}<h2>{section.heading}</h2>{section.description && <p>{section.description}</p>}</div><SectionAction section={section} preview={preview} secondary /></div>
-    <div className="sf-category-grid">{collections.map((collection) => { const src=collection.image ? safeImageSource(collection.image.src) : null; return <article className="sf-category-card" key={collection.id}>{collection.image && src ? <img src={src} alt={collection.image.alt} /> : <div className="sf-catalogue-placeholder" aria-hidden="true" />}<div><h3>{collection.name}</h3>{collection.description && <p>{collection.description}</p>}</div></article>; })}</div>
+    <div className="sf-category-grid">{collections.map((collection) => { const src=collection.image ? safeImageSource(collection.image.src) : null; return <Link className="sf-category-card sf-card-link" href={`/collections/${collection.slug}`} key={collection.id}>{collection.image && src ? <img src={src} alt={collection.image.alt} /> : <div className="sf-catalogue-placeholder" aria-hidden="true" />}<div><h3>{collection.name}</h3>{collection.description && <p>{collection.description}</p>}</div></Link>; })}</div>
     {!collections.length && preview && <p className="sf-empty">No published collections yet.</p>}
   </section>;
 }
@@ -34,7 +35,7 @@ export function ProductShowcaseSection({ section, preview, catalogue }: { sectio
   return <section className="sf-section sf-product-showcase" data-layout={section.layout}>
     <div className="sf-heading-with-action"><div className="sf-section-heading">{section.eyebrow && <span className="sf-eyebrow">{section.eyebrow}</span>}<h2>{section.heading}</h2>{section.description && <p>{section.description}</p>}</div><SectionAction section={section} preview={preview} secondary /></div>
     {section.tabs.length > 0 && <div className="sf-catalogue-tabs" aria-label="Product collections">{section.tabs.map((entry) => <button type="button" key={entry.id} data-active={entry.id === activeTab} onClick={() => setActiveTab(entry.id)}>{entry.label}</button>)}</div>}
-    <div className="sf-product-grid">{visibleProducts.map((product) => { const available=product.variants.some((variant) => variant.purchasable); const src=product.primaryImage ? safeImageSource(product.primaryImage.src) : null; return <article className="sf-product-card" key={product.id}>{product.primaryImage && src ? <img src={src} alt={product.primaryImage.alt} /> : <div className="sf-catalogue-placeholder" aria-hidden="true" />}<div className="sf-product-copy"><h3>{product.name}</h3>{product.shortDescription && <p>{product.shortDescription}</p>}<div><strong>{money(product)}</strong><span>{available ? "Available" : "Sold out"}</span></div></div></article>; })}</div>
+    <div className="sf-product-grid">{visibleProducts.map((product) => { const available=product.variants.some((variant) => variant.purchasable); const src=product.primaryImage ? safeImageSource(product.primaryImage.src) : null; return <Link className="sf-product-card sf-card-link" href={`/products/${product.id}`} key={product.id}>{product.primaryImage && src ? <img src={src} alt={product.primaryImage.alt} /> : <div className="sf-catalogue-placeholder" aria-hidden="true" />}<div className="sf-product-copy"><h3>{product.name}</h3>{product.shortDescription && <p>{product.shortDescription}</p>}<div><strong>{money(product)}</strong><span>{available ? "Available" : "Sold out"}</span></div></div></Link>; })}</div>
     {!visibleProducts.length && preview && <p className="sf-empty">No website products match this section yet.</p>}
   </section>;
 }
