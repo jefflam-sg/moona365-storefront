@@ -1,10 +1,10 @@
-import type { StorefrontSnapshot } from "./contracts";
+import type { HomepageCatalogue, StorefrontSnapshot } from "./contracts";
 import { StorefrontHeader } from "./header";
 import { StorefrontFooter } from "./footer";
 import { renderHomepageSection, unsupportedVisibleSections } from "./sections/registry";
 import { themeVariables } from "./theme";
 
-export function StorefrontRenderer({ snapshot, preview = false }: { snapshot: StorefrontSnapshot; preview?: boolean }) {
+export function StorefrontRenderer({ snapshot, preview = false, catalogue = { collections: [], productsBySectionId: {} } }: { snapshot: StorefrontSnapshot; preview?: boolean; catalogue?: HomepageCatalogue }) {
   const unsupported = unsupportedVisibleSections(snapshot.homepage.sections);
   return (
     <div className="sf-site" data-preview={preview} style={themeVariables(snapshot.design)}>
@@ -16,7 +16,7 @@ export function StorefrontRenderer({ snapshot, preview = false }: { snapshot: St
       <main>
         {snapshot.homepage.sections
           .filter((section) => section.visible)
-          .map((section) => renderHomepageSection(section, preview))}
+          .map((section) => renderHomepageSection(section, preview, catalogue))}
       </main>
       <StorefrontFooter design={snapshot.design} />
     </div>

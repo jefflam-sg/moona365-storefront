@@ -147,3 +147,33 @@ export type StorefrontSnapshot = {
   design: WebsiteDesign;
   homepage: { schemaVersion: 1; sections: HomepageSection[] };
 };
+
+export type PublicCollection = {
+  id: string;
+  name: string;
+  slug: string;
+  path: string;
+  description: string;
+  image: BrandAsset | null;
+};
+
+export type PublicProduct = {
+  id: string;
+  slug: string;
+  name: string;
+  shortDescription: string;
+  primaryImage: BrandAsset | null;
+  collectionIds: string[];
+  variants: Array<{
+    id: string;
+    label: string;
+    price: { amount: string; currency: string };
+    availability: "AVAILABLE" | "SOLD_OUT" | "UNAVAILABLE";
+    purchasable: boolean;
+  }>;
+};
+
+export type HomepageCatalogue = {
+  collections: PublicCollection[];
+  productsBySectionId: Record<string, PublicProduct[]>;
+};

@@ -1,15 +1,18 @@
 import type { ComponentType } from "react";
-import type { HomepageSection, SectionType } from "../contracts";
+import type { HomepageCatalogue, HomepageSection, SectionType } from "../contracts";
 import { HeroSection } from "./hero";
 import { GroupedServicesSection, ServicesSection, StatsSection } from "./content-sections";
 import { FeaturedCollectionSection } from "./featured-collection";
+import { CategoriesSection, ProductShowcaseSection } from "./catalogue-sections";
 
-export type SectionRendererProps = { section: HomepageSection; preview: boolean };
+export type SectionRendererProps = { section: HomepageSection; preview: boolean; catalogue: HomepageCatalogue };
 type VersionedRenderer = { version: 1; component: ComponentType<SectionRendererProps> };
 
 const sectionRegistry: Partial<Record<SectionType, VersionedRenderer>> = {
   hero: { version: 1, component: HeroSection },
+  categories: { version: 1, component: CategoriesSection },
   "featured-collection": { version: 1, component: FeaturedCollectionSection },
+  "product-showcase": { version: 1, component: ProductShowcaseSection },
   stats: { version: 1, component: StatsSection },
   services: { version: 1, component: ServicesSection },
   "services-showcase-grouped": { version: 1, component: GroupedServicesSection },
@@ -26,9 +29,9 @@ export function unsupportedVisibleSections(sections: HomepageSection[]) {
   });
 }
 
-export function renderHomepageSection(section: HomepageSection, preview: boolean) {
+export function renderHomepageSection(section: HomepageSection, preview: boolean, catalogue: HomepageCatalogue) {
   const registered = sectionRegistry[section.type];
   if (!registered || registered.version !== section.version) return null;
   const Component = registered.component;
-  return <Component key={section.id} section={section} preview={preview} />;
+  return <Component key={section.id} section={section} preview={preview} catalogue={catalogue} />;
 }
