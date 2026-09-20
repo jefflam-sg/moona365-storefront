@@ -56,18 +56,20 @@ export function ServicesSection({ section, preview }: { section: HomepageSection
 export function GroupedServicesSection({ section, preview }: { section: HomepageSection; preview: boolean }) {
   return (
     <section className="sf-section sf-grouped-services" data-section-id={section.id}>
-      <div className="sf-width sf-grouped-heading"><SectionHeading section={section} /></div>
-      {section.groups?.map((group) => (
-        <div className="sf-service-band" key={group.id}>
-          <div className="sf-width sf-service-row">
+      <div className="sf-grouped-panel">
+        <div className="sf-grouped-heading"><SectionHeading section={section} /></div>
+        <div className="sf-service-groups">{section.groups?.map((group) => (
+          <div className="sf-service-band" key={group.id}>
+            <div className="sf-service-row">
             <div className="sf-service-group"><StorefrontIcon name={group.icon} /><h3>{group.title}</h3><p>{group.description}</p></div>
             <div className="sf-grouped-cards">
               {group.items.map((item) => <article className="sf-grouped-card" key={item.id}><span className="sf-grouped-icon"><StorefrontIcon name={item.icon} /></span><div><h4>{item.title}</h4><p>{item.description}</p></div></article>)}
             </div>
+            </div>
           </div>
-        </div>
-      ))}
-      <div className="sf-width sf-grouped-action"><SectionAction section={section} preview={preview} /></div>
+        ))}</div>
+        <div className="sf-grouped-action"><SectionAction section={section} preview={preview} /></div>
+      </div>
     </section>
   );
 }
