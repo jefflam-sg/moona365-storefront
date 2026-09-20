@@ -50,6 +50,27 @@ test("loads only the catalogue required by visible homepage sections", async () 
   assert.deepEqual(result.productsBySectionId.arrivals, productResponse.products);
 });
 
+test("loads each collection tab so later tabs are not limited by the first product page", async () => {
+  const calls = [];
+  const pantry = { ...productResponse, products: [{ ...productResponse.products[0], id: "pantry-product", collectionIds: ["pantry"] }] };
+  const home = { ...productResponse, products: [{ ...productResponse.products[0], id: "home-product", collectionIds: ["home"] }] };
+  const fetchImpl = async (url) => {
+    const value = String(url);
+    calls.push(value);
+    const collectionId = new URL(value).searchParams.get("collectionId");
+    return { ok: true, json: async () => collectionId === "pantry" ? pantry : home };
+  };
+  const snapshot = { homepage: { sections: [{
+    id: "products", type: "product-showcase", visible: true, limit: 4,
+    source: { kind: "newest", collectionId: "", productIds: [] },
+    tabs: [{ id: "pantry-tab", label: "Pantry", collectionId: "pantry" }, { id: "home-tab", label: "Home", collectionId: "home" }],
+  }] } };
+  const result = await loadHomepageCatalogue(host, snapshot, { baseUrl: "https://api.example.com", fetchImpl });
+  assert.equal(calls.length, 2);
+  assert.deepEqual(calls.map((url) => new URL(url).searchParams.get("collectionId")), ["pantry", "home"]);
+  assert.deepEqual(result.productsBySectionId.products.map((product) => product.id), ["pantry-product", "home-product"]);
+});
+
 test("loads tenant-scoped category, collection and selected-product destinations", async () => {
   const calls = [];
   const fetchImpl = async (url) => {

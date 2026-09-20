@@ -13,6 +13,10 @@ export function StorefrontPageShell({ snapshot, children }: { snapshot: Storefro
   return <div className="sf-site" style={themeVariables(snapshot.design)}><StorefrontHeader design={snapshot.design} preview={false} /><main className="sf-catalogue-page sf-width">{children}</main><StorefrontFooter design={snapshot.design} /></div>;
 }
 
+export function MaintenancePage({ snapshot }: { snapshot: StorefrontSnapshot }) {
+  return <StorefrontPageShell snapshot={snapshot}><section className="status"><h1>We&apos;ll be back shortly</h1><p>This store is temporarily unavailable while updates are completed. Please check again soon.</p></section></StorefrontPageShell>;
+}
+
 export function CollectionCard({ collection }: { collection: PublicCollection }) {
   const src = collection.image ? safeImageSource(collection.image.src) : null;
   return <Link className="sf-category-card sf-card-link" href={`/collections/${collection.slug}`}>{collection.image && src ? <img src={src} alt={collection.image.alt} /> : <div className="sf-catalogue-placeholder" aria-hidden="true" />}<div><h3>{collection.name}</h3>{collection.description && <p>{collection.description}</p>}</div></Link>;

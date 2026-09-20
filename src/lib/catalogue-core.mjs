@@ -89,12 +89,32 @@ export async function loadHomepageCatalogue(host, snapshot, options = {}) {
     : { categories: [] };
   if (!categories) return null;
   const entries = await Promise.all(productSections.map(async (section) => {
-    const fetchLimit = section.tabs?.length ? 12 : section.limit;
-    const params = new URLSearchParams({ host, source: section.source.kind, limit: String(fetchLimit) });
-    if (section.source.kind === "collection") params.set("collectionId", section.source.collectionId);
-    if (section.source.kind === "manual") section.source.productIds.forEach((id) => params.append("productId", id));
-    const result = await getJson(`${root}/public/storefront/v1/products?${params}`, host, isProductsResponse, fetchImpl);
-    return result ? [section.id, result.products] : null;
+    const tabs = section.tabs ?? [];
+    const requests = [];
+    if (!tabs.length || tabs.some((tab) => !tab.collectionId)) {
+      requests.push({ source: section.source.kind, collectionId: section.source.collectionId, productIds: section.source.productIds, limit: section.limit });
+    }
+    for (const collectionId of new Set(tabs.map((tab) => tab.collectionId).filter(Boolean))) {
+      requests.push({ source: "collection", collectionId, productIds: [], limit: section.limit });
+    }
+    const results = await Promise.all(requests.map(async (request) => {
+      const params = new URLSearchParams({ host, source: request.source, limit: String(request.limit) });
+      if (request.source === "collection") params.set("collectionId", request.collectionId);
+      if (request.source === "manual") request.productIds.forEach((id) => params.append("productId", id));
+      return getJson(`${root}/public/storefront/v1/products?${params}`, host, isProductsResponse, fetchImpl);
+    }));
+    if (results.some((result) => result === null)) return null;
+    const products = [];
+    const seen = new Set();
+    for (const result of results) {
+      for (const product of result.products) {
+        if (!seen.has(product.id)) {
+          seen.add(product.id);
+          products.push(product);
+        }
+      }
+    }
+    return [section.id, products];
   }));
   if (entries.some((entry) => entry === null)) return null;
   return { categories: categories.categories, collections: [], productsBySectionId: Object.fromEntries(entries) };

@@ -2,7 +2,8 @@ import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { resolvePublishedStorefront } from "@/lib/bootstrap";
 import { loadStorefrontCategories, loadStorefrontProducts } from "@/lib/catalogue";
-import { ProductCard, StorefrontPageShell } from "@/storefront/catalogue-page";
+import { MaintenancePage, ProductCard, StorefrontPageShell } from "@/storefront/catalogue-page";
+import { supportsPublishedSnapshot } from "@/storefront/storefront-renderer";
 
 export const dynamic = "force-dynamic";
 
@@ -14,6 +15,8 @@ export default async function CategoryPage({ params, searchParams }: {
   if (!host) notFound();
   const result = await resolvePublishedStorefront(host);
   if (!result) notFound();
+  if (!supportsPublishedSnapshot(result.snapshot)) notFound();
+  if (result.websiteStatus === "MAINTENANCE") return <MaintenancePage snapshot={result.snapshot} />;
   const [{ id }, query, categories] = await Promise.all([params, searchParams, loadStorefrontCategories(result.resolvedHost)]);
   const category = categories?.find((entry) => entry.id === id);
   if (!category) notFound();
