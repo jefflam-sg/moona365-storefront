@@ -4,7 +4,7 @@ import { StorefrontFooter } from "./footer";
 import { renderHomepageSection, unsupportedVisibleSections } from "./sections/registry";
 import { themeVariables } from "./theme";
 
-export function StorefrontRenderer({ snapshot, preview = false, catalogue = { collections: [], productsBySectionId: {} } }: { snapshot: StorefrontSnapshot; preview?: boolean; catalogue?: HomepageCatalogue }) {
+export function StorefrontRenderer({ snapshot, preview = false, catalogue = { categories: [], collections: [], productsBySectionId: {} } }: { snapshot: StorefrontSnapshot; preview?: boolean; catalogue?: HomepageCatalogue }) {
   const unsupported = unsupportedVisibleSections(snapshot.homepage.sections);
   return (
     <div className="sf-site" data-preview={preview} style={themeVariables(snapshot.design)}>

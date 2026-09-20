@@ -17,6 +17,16 @@ export function isCollectionsResponse(value, host) {
       [collection.id, collection.name, collection.slug, collection.path, collection.description].every(text) && validImage(collection.image));
 }
 
+export function isCategoriesResponse(value, host) {
+  return exact(value, ["apiVersion", "resolvedHost", "siteId", "calculatedAt", "categories"]) &&
+    value.apiVersion === 1 && value.resolvedHost === host && text(value.siteId) && text(value.calculatedAt) &&
+    Array.isArray(value.categories) && value.categories.every((category) =>
+      exact(category, ["id", "name", "parentId", "path", "image", "hasChildren"]) &&
+      [category.id, category.name, category.path].every(text) &&
+      (category.parentId === null || text(category.parentId)) && validImage(category.image) &&
+      typeof category.hasChildren === "boolean");
+}
+
 export function isProductsResponse(value, host) {
   return exact(value, ["apiVersion", "resolvedHost", "siteId", "calculatedAt", "products"]) &&
     value.apiVersion === 1 && value.resolvedHost === host && text(value.siteId) && text(value.calculatedAt) &&
@@ -45,6 +55,14 @@ export async function loadPublicCollections(host, options = {}) {
   return getJson(`${root}/public/storefront/v1/collections?host=${encodeURIComponent(host)}`, host, isCollectionsResponse, fetchImpl);
 }
 
+export async function loadPublicCategories(host, options = {}) {
+  const baseUrl = options.baseUrl ?? process.env.MOONA365_API_URL;
+  if (!baseUrl) throw new Error("MOONA365_API_URL is required");
+  const fetchImpl = options.fetchImpl ?? fetch;
+  const root = baseUrl.replace(/\/$/, "");
+  return getJson(`${root}/public/storefront/v1/categories?host=${encodeURIComponent(host)}`, host, isCategoriesResponse, fetchImpl);
+}
+
 export async function loadPublicProducts(host, query, options = {}) {
   const baseUrl = options.baseUrl ?? process.env.MOONA365_API_URL;
   if (!baseUrl) throw new Error("MOONA365_API_URL is required");
@@ -52,6 +70,8 @@ export async function loadPublicProducts(host, query, options = {}) {
   const root = baseUrl.replace(/\/$/, "");
   const params = new URLSearchParams({ host, source: query.source, limit: String(query.limit ?? 12) });
   if (query.collectionId) params.set("collectionId", query.collectionId);
+  if (query.categoryId) params.set("categoryId", query.categoryId);
+  if (query.source === "category") params.set("includeSubcategories", String(Boolean(query.includeSubcategories)));
   for (const id of query.productIds ?? []) params.append("productId", id);
   return getJson(`${root}/public/storefront/v1/products?${params}`, host, isProductsResponse, fetchImpl);
 }
@@ -61,13 +81,13 @@ export async function loadHomepageCatalogue(host, snapshot, options = {}) {
   if (!baseUrl) throw new Error("MOONA365_API_URL is required");
   const fetchImpl = options.fetchImpl ?? fetch;
   const visible = snapshot.homepage.sections.filter((section) => section.visible);
-  const needsCollections = visible.some((section) => section.type === "categories");
+  const needsCategories = visible.some((section) => ["categories", "category-cards"].includes(section.type));
   const productSections = visible.filter((section) => section.type === "product-showcase" && ["newest", "collection", "manual"].includes(section.source.kind));
   const root = baseUrl.replace(/\/$/, "");
-  const collections = needsCollections
-    ? await getJson(`${root}/public/storefront/v1/collections?host=${encodeURIComponent(host)}`, host, isCollectionsResponse, fetchImpl)
-    : { collections: [] };
-  if (!collections) return null;
+  const categories = needsCategories
+    ? await getJson(`${root}/public/storefront/v1/categories?host=${encodeURIComponent(host)}`, host, isCategoriesResponse, fetchImpl)
+    : { categories: [] };
+  if (!categories) return null;
   const entries = await Promise.all(productSections.map(async (section) => {
     const fetchLimit = section.tabs?.length ? 12 : section.limit;
     const params = new URLSearchParams({ host, source: section.source.kind, limit: String(fetchLimit) });
@@ -77,5 +97,5 @@ export async function loadHomepageCatalogue(host, snapshot, options = {}) {
     return result ? [section.id, result.products] : null;
   }));
   if (entries.some((entry) => entry === null)) return null;
-  return { collections: collections.collections, productsBySectionId: Object.fromEntries(entries) };
+  return { categories: categories.categories, collections: [], productsBySectionId: Object.fromEntries(entries) };
 }

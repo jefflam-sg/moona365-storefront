@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
-import type { PublicCollection, PublicProduct, StorefrontSnapshot } from "./contracts";
+import type { PublicCategory, PublicCollection, PublicProduct, StorefrontSnapshot } from "./contracts";
 import { StorefrontFooter } from "./footer";
 import { StorefrontHeader } from "./header";
 import { safeImageSource } from "./safe-values";
@@ -16,6 +16,12 @@ export function StorefrontPageShell({ snapshot, children }: { snapshot: Storefro
 export function CollectionCard({ collection }: { collection: PublicCollection }) {
   const src = collection.image ? safeImageSource(collection.image.src) : null;
   return <Link className="sf-category-card sf-card-link" href={`/collections/${collection.slug}`}>{collection.image && src ? <img src={src} alt={collection.image.alt} /> : <div className="sf-catalogue-placeholder" aria-hidden="true" />}<div><h3>{collection.name}</h3>{collection.description && <p>{collection.description}</p>}</div></Link>;
+}
+
+export function CategoryCard({ category }: { category: PublicCategory }) {
+  const src = category.image ? safeImageSource(category.image.src) : null;
+  const href = `/categories/${category.id}${category.hasChildren ? "?includeSubcategories=true" : ""}`;
+  return <Link className="sf-category-card sf-card-link" href={href}>{category.image && src ? <img src={src} alt={category.image.alt} /> : <div className="sf-catalogue-placeholder" aria-hidden="true" />}<div><h3>{category.name}</h3></div></Link>;
 }
 
 function money(product: PublicProduct) {

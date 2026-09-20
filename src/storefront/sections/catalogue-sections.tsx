@@ -19,11 +19,13 @@ function money(product: PublicProduct) {
 }
 
 export function CategoriesSection({ section, preview, catalogue }: { section: HomepageSection; preview: boolean; catalogue: HomepageCatalogue }) {
-  const collections = catalogue.collections.slice(0, section.limit);
+  const categories = catalogue.categories
+    .filter((category) => category.parentId === null)
+    .slice(0, section.limit);
   return <section className={`sf-section sf-categories ${section.type === "categories" ? "sf-category-carousel" : "sf-category-cards-section"}`} data-layout={section.layout}>
     <div className="sf-heading-with-action"><div className="sf-section-heading">{section.eyebrow && <span className="sf-eyebrow">{section.eyebrow}</span>}<h2>{section.heading}</h2>{section.description && <p>{section.description}</p>}</div><SectionAction section={section} preview={preview} secondary /></div>
-    <div className="sf-category-grid">{collections.map((collection) => { const src=collection.image ? safeImageSource(collection.image.src) : null; return <Link className="sf-category-card sf-card-link" href={`/collections/${collection.slug}`} key={collection.id}>{collection.image && src ? <img src={src} alt={collection.image.alt} /> : <div className="sf-catalogue-placeholder" aria-hidden="true" />}<div><h3>{collection.name}</h3>{collection.description && <p>{collection.description}</p>}</div></Link>; })}</div>
-    {!collections.length && preview && <p className="sf-empty">No published collections yet.</p>}
+    <div className="sf-category-grid">{categories.map((category) => { const src=category.image ? safeImageSource(category.image.src) : null; return <Link className="sf-category-card sf-card-link" href={`/categories/${category.id}${category.hasChildren ? "?includeSubcategories=true" : ""}`} key={category.id}>{category.image && src ? <img src={src} alt={category.image.alt} /> : <div className="sf-catalogue-placeholder" aria-hidden="true" />}<div><h3>{category.name}</h3></div></Link>; })}</div>
+    {!categories.length && preview && <p className="sf-empty">No active Product categories yet.</p>}
   </section>;
 }
 

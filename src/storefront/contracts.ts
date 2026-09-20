@@ -156,6 +156,14 @@ export type PublicCollection = {
   description: string;
   image: BrandAsset | null;
 };
+export type PublicCategory = {
+  id: string;
+  name: string;
+  parentId: string | null;
+  path: string;
+  image: BrandAsset | null;
+  hasChildren: boolean;
+};
 
 export type PublicProduct = {
   id: string;
@@ -174,6 +182,7 @@ export type PublicProduct = {
 };
 
 export type HomepageCatalogue = {
+  categories: PublicCategory[];
   collections: PublicCollection[];
   productsBySectionId: Record<string, PublicProduct[]>;
 };
