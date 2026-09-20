@@ -5,6 +5,7 @@ import { StorefrontFooter } from "./footer";
 import { StorefrontHeader } from "./header";
 import { safeImageSource } from "./safe-values";
 import { themeVariables } from "./theme";
+import { categoryHref } from "./category-url";
 
 /* Tenant-configured catalogue images are validated by the public API. */
 /* eslint-disable @next/next/no-img-element */
@@ -24,7 +25,7 @@ export function CollectionCard({ collection }: { collection: PublicCollection })
 
 export function CategoryCard({ category }: { category: PublicCategory }) {
   const src = category.image ? safeImageSource(category.image.src) : null;
-  const href = `/categories/${category.id}${category.hasChildren ? "?includeSubcategories=true" : ""}`;
+  const href = categoryHref(category);
   return <Link className="sf-category-card sf-card-link" href={href}>{category.image && src ? <img src={src} alt={category.image.alt} /> : <div className="sf-catalogue-placeholder" aria-hidden="true" />}<div><h3>{category.name}</h3></div></Link>;
 }
 

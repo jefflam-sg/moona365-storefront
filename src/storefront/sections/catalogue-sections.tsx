@@ -8,6 +8,7 @@ import type { HomepageCatalogue, HomepageSection, PublicProduct } from "../contr
 import { safeImageSource } from "../safe-values";
 import { SectionAction } from "./section-action";
 import { CategoryCarousel } from "./category-carousel";
+import { categoryHref } from "../category-url";
 
 function money(product: PublicProduct) {
   const variant = product.variants.find((entry) => entry.purchasable) ?? product.variants[0];
@@ -26,7 +27,7 @@ export function CategoriesSection({ section, preview, catalogue }: { section: Ho
     : catalogue.categories.filter((category) => category.parentId === null).slice(0, section.limit);
   return <section className={`sf-section sf-categories ${section.type === "categories" ? "sf-category-carousel" : "sf-category-cards-section"}`} data-layout={section.layout}>
     <div className="sf-heading-with-action"><div className="sf-section-heading">{section.eyebrow && <span className="sf-eyebrow">{section.eyebrow}</span>}<h2>{section.heading}</h2>{section.description && <p>{section.description}</p>}</div><SectionAction section={section} preview={preview} secondary /></div>
-    {section.type === "categories" ? <CategoryCarousel categories={categories} preview={preview} /> : <div className="sf-category-grid">{categories.map((category) => { const src=category.image ? safeImageSource(category.image.src) : null; return <Link className="sf-category-card sf-card-link" href={`/categories/${category.id}${category.hasChildren ? "?includeSubcategories=true" : ""}`} key={category.id}>{category.image && src ? <img src={src} alt={category.image.alt} /> : <div className="sf-catalogue-placeholder" aria-hidden="true" />}<div><h3>{category.name}</h3></div></Link>; })}</div>}
+    {section.type === "categories" ? <CategoryCarousel categories={categories} preview={preview} /> : <div className="sf-category-grid">{categories.map((category) => { const src=category.image ? safeImageSource(category.image.src) : null; return <Link className="sf-category-card sf-card-link" href={categoryHref(category)} key={category.id}>{category.image && src ? <img src={src} alt={category.image.alt} /> : <div className="sf-catalogue-placeholder" aria-hidden="true" />}<div><h3>{category.name}</h3></div></Link>; })}</div>}
     {!categories.length && preview && <p className="sf-empty">No active Product categories yet.</p>}
   </section>;
 }

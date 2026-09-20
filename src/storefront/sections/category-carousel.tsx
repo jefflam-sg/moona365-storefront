@@ -6,6 +6,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import type { PublicCategory } from "../contracts";
 import { safeImageSource } from "../safe-values";
+import { categoryHref } from "../category-url";
 
 export function CategoryCarousel({ categories, preview }: { categories: PublicCategory[]; preview: boolean }) {
   const trackRef = useRef<HTMLDivElement | null>(null);
@@ -44,7 +45,7 @@ export function CategoryCarousel({ categories, preview }: { categories: PublicCa
     <div className="sf-category-track" ref={trackRef}>
       {categories.map((category) => {
         const src = category.image ? safeImageSource(category.image.src) : null;
-        return <Link className="sf-category-card sf-card-link" href={`/categories/${category.id}${category.hasChildren ? "?includeSubcategories=true" : ""}`} key={category.id} onClick={preview ? (event) => event.preventDefault() : undefined}>
+        return <Link className="sf-category-card sf-card-link" href={categoryHref(category)} key={category.id} onClick={preview ? (event) => event.preventDefault() : undefined}>
           {category.image && src ? <img src={src} alt={category.image.alt} /> : <div className="sf-catalogue-placeholder" aria-hidden="true" />}
           <div><h3>{category.name}</h3></div>
         </Link>;
