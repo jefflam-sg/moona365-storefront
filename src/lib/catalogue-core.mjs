@@ -69,6 +69,7 @@ export async function loadPublicProducts(host, query, options = {}) {
   const fetchImpl = options.fetchImpl ?? fetch;
   const root = baseUrl.replace(/\/$/, "");
   const params = new URLSearchParams({ host, source: query.source, limit: String(query.limit ?? 12) });
+  if (query.page) params.set("page", String(query.page));
   if (query.collectionId) params.set("collectionId", query.collectionId);
   if (query.categoryId) params.set("categoryId", query.categoryId);
   if (query.source === "category") params.set("includeSubcategories", String(Boolean(query.includeSubcategories)));
@@ -81,13 +82,16 @@ export async function loadHomepageCatalogue(host, snapshot, options = {}) {
   if (!baseUrl) throw new Error("MOONA365_API_URL is required");
   const fetchImpl = options.fetchImpl ?? fetch;
   const visible = snapshot.homepage.sections.filter((section) => section.visible);
-  const needsCategories = visible.some((section) => ["categories", "category-cards"].includes(section.type));
+  const navigationNodes = Object.values(snapshot.navigation?.menus ?? {}).flatMap((menu) => menu?.nodes ?? []);
+  const needsCategories = visible.some((section) => ["categories", "category-cards"].includes(section.type)) || navigationNodes.some((node) => node.destination?.type === "PRODUCT_CATEGORY" || node.automaticChildren);
+  const needsCollections = navigationNodes.some((node) => node.destination?.type === "WEBSITE_COLLECTION" || node.megaMenu?.promo?.destination?.type === "WEBSITE_COLLECTION");
   const productSections = visible.filter((section) => section.type === "product-showcase" && ["newest", "collection", "manual"].includes(section.source.kind));
   const root = baseUrl.replace(/\/$/, "");
-  const categories = needsCategories
-    ? await getJson(`${root}/public/storefront/v1/categories?host=${encodeURIComponent(host)}`, host, isCategoriesResponse, fetchImpl)
-    : { categories: [] };
-  if (!categories) return null;
+  const [categories, collections] = await Promise.all([
+    needsCategories ? getJson(`${root}/public/storefront/v1/categories?host=${encodeURIComponent(host)}`, host, isCategoriesResponse, fetchImpl) : Promise.resolve({ categories: [] }),
+    needsCollections ? getJson(`${root}/public/storefront/v1/collections?host=${encodeURIComponent(host)}`, host, isCollectionsResponse, fetchImpl) : Promise.resolve({ collections: [] }),
+  ]);
+  if (!categories || !collections) return null;
   const entries = await Promise.all(productSections.map(async (section) => {
     const tabs = section.tabs ?? [];
     const requests = [];
@@ -117,5 +121,22 @@ export async function loadHomepageCatalogue(host, snapshot, options = {}) {
     return [section.id, products];
   }));
   if (entries.some((entry) => entry === null)) return null;
-  return { categories: categories.categories, collections: [], productsBySectionId: Object.fromEntries(entries) };
+  const navigationProductIds = [...new Set(Object.values(snapshot.navigation?.menus ?? {}).flatMap((menu) => (menu?.nodes ?? []).flatMap((node) => {
+    const ids = [];
+    if (node.destination?.type === "PRODUCT") ids.push(node.destination.productId);
+    if (node.megaMenu?.promo?.destination?.type === "PRODUCT") ids.push(node.megaMenu.promo.destination.productId);
+    return ids;
+  })).filter(Boolean))];
+  if (navigationProductIds.length) {
+    const products = [];
+    for (let index = 0; index < navigationProductIds.length; index += 12) {
+      const params = new URLSearchParams({ host, source: "manual", limit: "12" });
+      navigationProductIds.slice(index, index + 12).forEach((id) => params.append("productId", id));
+      const result = await getJson(`${root}/public/storefront/v1/products?${params}`, host, isProductsResponse, fetchImpl);
+      if (!result) return null;
+      products.push(...result.products);
+    }
+    entries.push(["__navigation", products]);
+  }
+  return { categories: categories.categories, collections: collections.collections, productsBySectionId: Object.fromEntries(entries) };
 }

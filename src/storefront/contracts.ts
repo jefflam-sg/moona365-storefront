@@ -147,7 +147,19 @@ export type StorefrontSnapshot = {
   theme: { code: "retail-natural"; version: 1 };
   design: WebsiteDesign;
   homepage: { schemaVersion: 1; sections: HomepageSection[] };
+  navigation?: WebsiteNavigation;
 };
+
+export type NavigationDestination =
+  | { type: "MENU_GROUP" }
+  | { type: "SHOP_ALL" }
+  | { type: "PRODUCT_CATEGORY"; categoryId: string; includeSubcategories: boolean }
+  | { type: "WEBSITE_COLLECTION"; collectionId: string }
+  | { type: "PRODUCT"; productId: string }
+  | { type: "SYSTEM_PAGE"; page: "HOME" | "SHOP" | "CATEGORIES" | "COLLECTIONS" }
+  | { type: "CUSTOM_URL"; url: string };
+export type NavigationNode = { id: string; parentId: string | null; position: number; visible: boolean; labelOverride: string | null; destination: NavigationDestination; presentation: "LINK" | "DROPDOWN" | "MEGA_MENU"; automaticChildren: null | { scope: "CHILDREN_OF_CATEGORY" | "ALL_TOP_LEVEL"; maxDepth: 1 | 2 }; megaMenu: null | { columns: 3 | 4 | 5; promo: null | { heading: string; text: string; image: BrandAsset | null; destination: NavigationDestination } } };
+export type WebsiteNavigation = { schemaVersion: 1; menus: { main: { id: "main"; nodes: NavigationNode[] }; footer: { id: "footer"; nodes: NavigationNode[] } } };
 
 export type PublicCollection = {
   id: string;

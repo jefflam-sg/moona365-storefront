@@ -13,8 +13,20 @@ export async function loadStorefrontCategories(host: string): Promise<PublicCate
   const result = await loadCategories(host);
   return result ? result.categories as PublicCategory[] : null;
 }
+export async function loadNavigationCatalogue(host: string, snapshot?: StorefrontSnapshot): Promise<HomepageCatalogue | null> {
+  const [categories, collections] = await Promise.all([loadStorefrontCategories(host), loadStorefrontCollections(host)]);
+  if (!categories || !collections) return null;
+  const productIds = [...new Set(Object.values(snapshot?.navigation?.menus ?? {}).flatMap((menu) => menu.nodes.flatMap((node) => [node.destination, node.megaMenu?.promo?.destination].flatMap((destination) => destination?.type === "PRODUCT" ? [destination.productId] : []))))];
+  const products: PublicProduct[] = [];
+  for (let index = 0; index < productIds.length; index += 12) {
+    const page = await loadStorefrontProducts(host, { source: "manual", productIds: productIds.slice(index, index + 12), limit: 12 });
+    if (!page) return null;
+    products.push(...page);
+  }
+  return { categories, collections, productsBySectionId: products.length ? { __navigation: products } : {} };
+}
 
-export async function loadStorefrontProducts(host: string, query: { source: "newest" | "collection" | "manual" | "category"; collectionId?: string; categoryId?: string; includeSubcategories?: boolean; productIds?: string[]; limit?: number }): Promise<PublicProduct[] | null> {
+export async function loadStorefrontProducts(host: string, query: { source: "newest" | "collection" | "manual" | "category"; collectionId?: string; categoryId?: string; includeSubcategories?: boolean; productIds?: string[]; limit?: number; page?: number }): Promise<PublicProduct[] | null> {
   const result = await loadProducts(host, query);
   return result ? result.products as PublicProduct[] : null;
 }

@@ -1,7 +1,7 @@
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { resolvePublishedStorefront } from "@/lib/bootstrap";
-import { loadStorefrontProducts } from "@/lib/catalogue";
+import { loadNavigationCatalogue, loadStorefrontProducts } from "@/lib/catalogue";
 import { MaintenancePage, ProductDetail, StorefrontPageShell } from "@/storefront/catalogue-page";
 import { supportsPublishedSnapshot } from "@/storefront/storefront-renderer";
 
@@ -14,8 +14,8 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
   if (!supportsPublishedSnapshot(result.snapshot)) notFound();
   if (result.websiteStatus === "MAINTENANCE") return <MaintenancePage snapshot={result.snapshot} />;
   const id = (await params).id;
-  const products = await loadStorefrontProducts(result.resolvedHost, { source: "manual", productIds: [id], limit: 1 });
+  const [products, catalogue] = await Promise.all([loadStorefrontProducts(result.resolvedHost, { source: "manual", productIds: [id], limit: 1 }), loadNavigationCatalogue(result.resolvedHost, result.snapshot)]);
   const product = products?.find((entry) => entry.id === id);
   if (!product) notFound();
-  return <StorefrontPageShell snapshot={result.snapshot}><ProductDetail product={product} /></StorefrontPageShell>;
+  return <StorefrontPageShell snapshot={result.snapshot} catalogue={catalogue ?? undefined}><ProductDetail product={product} /></StorefrontPageShell>;
 }

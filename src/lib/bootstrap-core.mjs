@@ -11,7 +11,8 @@ const bootstrapKeys = [
   "publishedAt",
   "snapshot",
 ];
-const snapshotKeys = ["contractVersion", "theme", "design", "homepage"];
+const legacySnapshotKeys = ["contractVersion", "theme", "design", "homepage"];
+const navigationSnapshotKeys = [...legacySnapshotKeys, "navigation"];
 const registeredBlocks = new Set([
   "hero",
   "categories",
@@ -62,7 +63,7 @@ export function normalizeRequestedHost(value) {
 function isSnapshotEnvelope(value) {
   if (
     !isRecord(value) ||
-    !hasExactKeys(value, snapshotKeys) ||
+    (!hasExactKeys(value, legacySnapshotKeys) && !hasExactKeys(value, navigationSnapshotKeys)) ||
     value.contractVersion !== 1 ||
     !isRecord(value.theme) ||
     !hasExactKeys(value.theme, ["code", "version"]) ||

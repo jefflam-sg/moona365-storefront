@@ -12,13 +12,13 @@ export function StorefrontRenderer({ snapshot, preview = false, catalogue = { ca
         Draft preview · commerce disabled
         {unsupported.length > 0 && ` · ${unsupported.length} section${unsupported.length === 1 ? "" : "s"} awaiting renderer migration`}
       </div>}
-      <StorefrontHeader design={snapshot.design} preview={preview} />
+      <StorefrontHeader design={snapshot.design} preview={preview} navigation={snapshot.navigation} catalogue={catalogue} />
       <main>
         {snapshot.homepage.sections
           .filter((section) => section.visible)
           .map((section) => renderHomepageSection(section, preview, catalogue))}
       </main>
-      <StorefrontFooter design={snapshot.design} preview={preview} />
+      <StorefrontFooter design={snapshot.design} preview={preview} navigation={snapshot.navigation} catalogue={catalogue} />
     </div>
   );
 }

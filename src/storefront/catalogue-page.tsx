@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
-import type { PublicCategory, PublicCollection, PublicProduct, StorefrontSnapshot } from "./contracts";
+import type { HomepageCatalogue, PublicCategory, PublicCollection, PublicProduct, StorefrontSnapshot } from "./contracts";
 import { StorefrontFooter } from "./footer";
 import { StorefrontHeader } from "./header";
 import { safeImageSource } from "./safe-values";
@@ -10,8 +10,8 @@ import { categoryHref } from "./category-url";
 /* Tenant-configured catalogue images are validated by the public API. */
 /* eslint-disable @next/next/no-img-element */
 
-export function StorefrontPageShell({ snapshot, children }: { snapshot: StorefrontSnapshot; children: ReactNode }) {
-  return <div className="sf-site" style={themeVariables(snapshot.design)}><StorefrontHeader design={snapshot.design} preview={false} /><main className="sf-catalogue-page sf-width">{children}</main><StorefrontFooter design={snapshot.design} /></div>;
+export function StorefrontPageShell({ snapshot, children, catalogue }: { snapshot: StorefrontSnapshot; children: ReactNode; catalogue?: HomepageCatalogue }) {
+  return <div className="sf-site" style={themeVariables(snapshot.design)}><StorefrontHeader design={snapshot.design} preview={false} navigation={snapshot.navigation} catalogue={catalogue} /><main className="sf-catalogue-page sf-width">{children}</main><StorefrontFooter design={snapshot.design} navigation={snapshot.navigation} catalogue={catalogue} /></div>;
 }
 
 export function MaintenancePage({ snapshot }: { snapshot: StorefrontSnapshot }) {
