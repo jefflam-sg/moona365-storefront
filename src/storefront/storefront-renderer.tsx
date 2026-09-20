@@ -18,7 +18,7 @@ export function StorefrontRenderer({ snapshot, preview = false, catalogue = { ca
           .filter((section) => section.visible)
           .map((section) => renderHomepageSection(section, preview, catalogue))}
       </main>
-      <StorefrontFooter design={snapshot.design} />
+      <StorefrontFooter design={snapshot.design} preview={preview} />
     </div>
   );
 }

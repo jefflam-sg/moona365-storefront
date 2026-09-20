@@ -55,6 +55,7 @@ export type WebsiteDesign = {
   };
   header: {
     logoPosition: "left" | "center";
+    logoSize?: "small" | "standard" | "large";
     style: "standard" | "compact";
     sticky: boolean;
     showSearch: boolean;
