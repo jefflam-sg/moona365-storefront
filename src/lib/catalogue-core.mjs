@@ -9,6 +9,15 @@ const safeImageSource = (value) => {
 };
 const validImage = (value) => value === null || (exact(value, ["src", "alt"]) && safeImageSource(value.src) && text(value.alt) && value.alt.length <= 120);
 const validVariantImage = (value) => value === null || (exact(value, ["mediaAssetId", "src", "alt"]) && text(value.mediaAssetId) && safeImageSource(value.src) && text(value.alt) && value.alt.length <= 120);
+const validVariant = (variant) => {
+  const legacyKeys = ["id", "label", "price", "availability", "purchasable"];
+  const imageKeys = ["id", "label", "primaryImage", "price", "availability", "purchasable"];
+  return (exact(variant, legacyKeys) || exact(variant, imageKeys)) &&
+    text(variant.id) && text(variant.label) &&
+    (!Object.hasOwn(variant, "primaryImage") || validVariantImage(variant.primaryImage)) &&
+    exact(variant.price, ["amount", "currency"]) && text(variant.price.amount) && text(variant.price.currency) &&
+    ["AVAILABLE", "SOLD_OUT", "UNAVAILABLE"].includes(variant.availability) && typeof variant.purchasable === "boolean";
+};
 
 export function isCollectionsResponse(value, host) {
   return exact(value, ["apiVersion", "resolvedHost", "siteId", "calculatedAt", "collections"]) &&
@@ -35,10 +44,7 @@ export function isProductsResponse(value, host) {
       exact(product, ["id", "slug", "name", "shortDescription", "primaryImage", "collectionIds", "variants"]) &&
       [product.id, product.slug, product.name, product.shortDescription].every(text) && validImage(product.primaryImage) &&
       Array.isArray(product.collectionIds) && product.collectionIds.every(text) && Array.isArray(product.variants) &&
-      product.variants.every((variant) => exact(variant, ["id", "label", "primaryImage", "price", "availability", "purchasable"]) &&
-        text(variant.id) && text(variant.label) && validVariantImage(variant.primaryImage) && exact(variant.price, ["amount", "currency"]) &&
-        text(variant.price.amount) && text(variant.price.currency) &&
-        ["AVAILABLE", "SOLD_OUT", "UNAVAILABLE"].includes(variant.availability) && typeof variant.purchasable === "boolean"));
+      product.variants.every(validVariant));
 }
 
 async function getJson(url, host, validator, fetchImpl) {

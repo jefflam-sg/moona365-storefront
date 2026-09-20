@@ -29,6 +29,9 @@ test("validates bounded public catalogue responses and rejects private fields", 
   assert.equal(isCollectionsResponse(collectionResponse, host), true);
   assert.equal(isCategoriesResponse(categoryResponse, host), true);
   assert.equal(isProductsResponse(productResponse, host), true);
+  const legacyResponse = structuredClone(productResponse);
+  delete legacyResponse.products[0].variants[0].primaryImage;
+  assert.equal(isProductsResponse(legacyResponse, host), true);
   assert.equal(isProductsResponse({ ...productResponse, orgId: "private" }, host), false);
   assert.equal(isProductsResponse({ ...productResponse, resolvedHost: "other.example.com" }, host), false);
 });
