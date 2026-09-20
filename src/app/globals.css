@@ -254,4 +254,5 @@ button, input { font: inherit; }
   .sf-category-grid, .sf-product-grid { grid-template-columns: 1fr; }
 }
 
+.sf-plp-layout[data-no-filters="true"] { grid-template-columns:minmax(0,1fr); }
 @media (prefers-reduced-motion: reduce) { .sf-primary-button, .sf-secondary-button, .sf-service-card, .sf-grouped-card { transition: none; } }

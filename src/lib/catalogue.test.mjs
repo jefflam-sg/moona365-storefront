@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { isCategoriesResponse, isCollectionsResponse, isProductsResponse, loadHomepageCatalogue, loadPublicCategories, loadPublicCollections, loadPublicProducts } from "./catalogue-core.mjs";
+import { isCategoriesResponse, isCollectionsResponse, isFilterConfigurationResponse, isProductsResponse, loadHomepageCatalogue, loadPublicCategories, loadPublicCollections, loadPublicFilterConfiguration, loadPublicProducts } from "./catalogue-core.mjs";
 
 const host = "shop.example.com";
 const collectionResponse = {
@@ -25,16 +25,31 @@ const categoryResponse = {
   calculatedAt: "2026-09-19T00:00:00.000Z",
   categories: [{ id: "pantry", name: "Pantry", parentId: null, path: "Pantry", image: null, hasChildren: true }],
 };
+const filterResponse = {
+  apiVersion: 1,
+  resolvedHost: host,
+  siteId: "site-1",
+  filterSet: { id: "filters-1", name: "Default", scopeType: "DEFAULT", scopeId: null, items: [{ key: "price", sourceType: "PRICE", customerLabel: "Price", presentation: "PRICE_RANGE", multipleSelection: false, showProductCount: false, maxInitiallyVisible: 5, valueSort: "MANUAL" }] },
+};
 
 test("validates bounded public catalogue responses and rejects private fields", () => {
   assert.equal(isCollectionsResponse(collectionResponse, host), true);
   assert.equal(isCategoriesResponse(categoryResponse, host), true);
   assert.equal(isProductsResponse(productResponse, host), true);
+  assert.equal(isFilterConfigurationResponse(filterResponse, host), true);
   const legacyResponse = structuredClone(productResponse);
   delete legacyResponse.products[0].variants[0].primaryImage;
   assert.equal(isProductsResponse(legacyResponse, host), true);
   assert.equal(isProductsResponse({ ...productResponse, orgId: "private" }, host), false);
   assert.equal(isProductsResponse({ ...productResponse, resolvedHost: "other.example.com" }, host), false);
+});
+
+test("loads the resolved server-side filter set for a listing scope", async () => {
+  const calls = [];
+  const result = await loadPublicFilterConfiguration(host, { scopeType: "CATEGORY", scopeId: "pantry" }, { baseUrl: "https://api.example.com", fetchImpl: async (url) => { calls.push(String(url)); return { ok: true, json: async () => filterResponse }; } });
+  assert.deepEqual(result, filterResponse);
+  assert.equal(new URL(calls[0]).searchParams.get("scopeType"), "CATEGORY");
+  assert.equal(new URL(calls[0]).searchParams.get("scopeId"), "pantry");
 });
 
 test("loads only the catalogue required by visible homepage sections", async () => {

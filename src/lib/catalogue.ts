@@ -1,5 +1,5 @@
-import { loadHomepageCatalogue as load, loadPublicCategories as loadCategories, loadPublicCollections as loadCollections, loadPublicProducts as loadProducts } from "./catalogue-core.mjs";
-import type { HomepageCatalogue, PublicCategory, PublicCollection, PublicProduct, PublicProductListing, StorefrontSnapshot } from "@/storefront/contracts";
+import { loadHomepageCatalogue as load, loadPublicCategories as loadCategories, loadPublicCollections as loadCollections, loadPublicFilterConfiguration as loadFilters, loadPublicProducts as loadProducts } from "./catalogue-core.mjs";
+import type { HomepageCatalogue, PublicCategory, PublicCollection, PublicFilterConfiguration, PublicProduct, PublicProductListing, StorefrontSnapshot } from "@/storefront/contracts";
 
 export async function loadHomepageCatalogue(host: string, snapshot: StorefrontSnapshot): Promise<HomepageCatalogue | null> {
   return (await load(host, snapshot)) as HomepageCatalogue | null;
@@ -33,4 +33,7 @@ export async function loadStorefrontProducts(host: string, query: { source: "new
 export async function loadStorefrontListing(host: string, query: { source: "newest" | "collection" | "category" | "search"; collectionId?: string; categoryId?: string; includeSubcategories?: boolean; limit?: number; page?: number; search?: string; sort?: string; minPrice?: string; maxPrice?: string; inStock?: boolean }): Promise<PublicProductListing | null> {
   const result = await loadProducts(host, query);
   return result as PublicProductListing | null;
+}
+export async function loadStorefrontFilterConfiguration(host: string, scope?: { scopeType?: "CATEGORY" | "COLLECTION"; scopeId?: string }): Promise<PublicFilterConfiguration | null> {
+  return await loadFilters(host, scope) as PublicFilterConfiguration | null;
 }

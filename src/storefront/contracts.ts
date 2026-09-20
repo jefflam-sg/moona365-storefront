@@ -202,6 +202,27 @@ export type PublicProductListing = {
   products: PublicProduct[];
   pagination: { page: number; pageSize: number; total: number; pageCount: number };
 };
+export type PublicFilterConfiguration = {
+  apiVersion: 1;
+  resolvedHost: string;
+  siteId: string;
+  filterSet: {
+    id: string;
+    name: string;
+    scopeType: "DEFAULT" | "CATEGORY" | "COLLECTION";
+    scopeId: string | null;
+    items: Array<{
+      key: string;
+      sourceType: "CATEGORY" | "ATTRIBUTE" | "PRICE" | "IN_STOCK";
+      customerLabel: string;
+      presentation: "CHECKBOX" | "CHIP" | "IMAGE" | "COLOR_SWATCH" | "PRICE_RANGE" | "BINARY_TOGGLE";
+      multipleSelection: boolean;
+      showProductCount: boolean;
+      maxInitiallyVisible: number;
+      valueSort: "ALPHABETICAL" | "PRODUCT_COUNT" | "MANUAL";
+    }>;
+  };
+};
 
 export type HomepageCatalogue = {
   categories: PublicCategory[];

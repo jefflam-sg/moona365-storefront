@@ -49,6 +49,19 @@ export function isProductsResponse(value, host) {
       product.variants.every(validVariant));
 }
 
+export function isFilterConfigurationResponse(value, host) {
+  const item = (entry) => exact(entry, ["key", "sourceType", "customerLabel", "presentation", "multipleSelection", "showProductCount", "maxInitiallyVisible", "valueSort"]) &&
+    [entry.key, entry.sourceType, entry.customerLabel, entry.presentation, entry.valueSort].every(text) &&
+    typeof entry.multipleSelection === "boolean" && typeof entry.showProductCount === "boolean" &&
+    Number.isSafeInteger(entry.maxInitiallyVisible) && entry.maxInitiallyVisible >= 1;
+  return exact(value, ["apiVersion", "resolvedHost", "siteId", "filterSet"]) &&
+    value.apiVersion === 1 && value.resolvedHost === host && text(value.siteId) &&
+    exact(value.filterSet, ["id", "name", "scopeType", "scopeId", "items"]) &&
+    [value.filterSet.id, value.filterSet.name, value.filterSet.scopeType].every(text) &&
+    (value.filterSet.scopeId === null || text(value.filterSet.scopeId)) &&
+    Array.isArray(value.filterSet.items) && value.filterSet.items.every(item);
+}
+
 async function getJson(url, host, validator, fetchImpl) {
   const response = await fetchImpl(url, { cache: "no-store", headers: { Accept: "application/json" } });
   if (!response.ok) return null;
@@ -89,6 +102,16 @@ export async function loadPublicProducts(host, query, options = {}) {
   if (query.source === "category") params.set("includeSubcategories", String(Boolean(query.includeSubcategories)));
   for (const id of query.productIds ?? []) params.append("productId", id);
   return getJson(`${root}/public/storefront/v1/products?${params}`, host, isProductsResponse, fetchImpl);
+}
+
+export async function loadPublicFilterConfiguration(host, scope = {}, options = {}) {
+  const baseUrl = options.baseUrl ?? process.env.MOONA365_API_URL;
+  if (!baseUrl) throw new Error("MOONA365_API_URL is required");
+  const fetchImpl = options.fetchImpl ?? fetch;
+  const params = new URLSearchParams({ host });
+  if (scope.scopeType) params.set("scopeType", scope.scopeType);
+  if (scope.scopeId) params.set("scopeId", scope.scopeId);
+  return getJson(baseUrl.replace(/\/$/, "") + "/public/storefront/v1/filters?" + params, host, isFilterConfigurationResponse, fetchImpl);
 }
 
 export async function loadHomepageCatalogue(host, snapshot, options = {}) {
