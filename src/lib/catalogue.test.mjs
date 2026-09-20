@@ -15,7 +15,7 @@ const productResponse = {
   resolvedHost: host,
   siteId: "site-1",
   calculatedAt: "2026-09-19T00:00:00.000Z",
-  products: [{ id: "p1", slug: "almonds", name: "Almonds", shortDescription: "", primaryImage: null, collectionIds: ["c1"], variants: [{ id: "v1", label: "100g", price: { amount: "8.50", currency: "SGD" }, availability: "AVAILABLE", purchasable: true }] }],
+  products: [{ id: "p1", slug: "almonds", name: "Almonds", shortDescription: "", primaryImage: null, collectionIds: ["c1"], variants: [{ id: "v1", label: "100g", primaryImage: null, price: { amount: "8.50", currency: "SGD" }, availability: "AVAILABLE", purchasable: true }] }],
 };
 const categoryResponse = {
   apiVersion: 1,

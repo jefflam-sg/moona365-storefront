@@ -8,6 +8,7 @@ const safeImageSource = (value) => {
   try { return new URL(value).protocol === "https:"; } catch { return false; }
 };
 const validImage = (value) => value === null || (exact(value, ["src", "alt"]) && safeImageSource(value.src) && text(value.alt) && value.alt.length <= 120);
+const validVariantImage = (value) => value === null || (exact(value, ["mediaAssetId", "src", "alt"]) && text(value.mediaAssetId) && safeImageSource(value.src) && text(value.alt) && value.alt.length <= 120);
 
 export function isCollectionsResponse(value, host) {
   return exact(value, ["apiVersion", "resolvedHost", "siteId", "calculatedAt", "collections"]) &&
@@ -34,8 +35,8 @@ export function isProductsResponse(value, host) {
       exact(product, ["id", "slug", "name", "shortDescription", "primaryImage", "collectionIds", "variants"]) &&
       [product.id, product.slug, product.name, product.shortDescription].every(text) && validImage(product.primaryImage) &&
       Array.isArray(product.collectionIds) && product.collectionIds.every(text) && Array.isArray(product.variants) &&
-      product.variants.every((variant) => exact(variant, ["id", "label", "price", "availability", "purchasable"]) &&
-        text(variant.id) && text(variant.label) && exact(variant.price, ["amount", "currency"]) &&
+      product.variants.every((variant) => exact(variant, ["id", "label", "primaryImage", "price", "availability", "purchasable"]) &&
+        text(variant.id) && text(variant.label) && validVariantImage(variant.primaryImage) && exact(variant.price, ["amount", "currency"]) &&
         text(variant.price.amount) && text(variant.price.currency) &&
         ["AVAILABLE", "SOLD_OUT", "UNAVAILABLE"].includes(variant.availability) && typeof variant.purchasable === "boolean"));
 }

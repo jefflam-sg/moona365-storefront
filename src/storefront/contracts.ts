@@ -188,6 +188,7 @@ export type PublicProduct = {
   variants: Array<{
     id: string;
     label: string;
+    primaryImage: (BrandAsset & { mediaAssetId: string }) | null;
     price: { amount: string; currency: string };
     availability: "AVAILABLE" | "SOLD_OUT" | "UNAVAILABLE";
     purchasable: boolean;
