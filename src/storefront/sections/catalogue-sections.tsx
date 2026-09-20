@@ -22,7 +22,7 @@ function money(product: PublicProduct) {
 export function CategoriesSection({ section, preview, catalogue }: { section: HomepageSection; preview: boolean; catalogue: HomepageCatalogue }) {
   const selectedIds = section.source.productIds;
   const categories = selectedIds.length
-    ? selectedIds.map((id) => catalogue.categories.find((category) => category.id === id)).filter((category): category is NonNullable<typeof category> => Boolean(category)).slice(0, section.limit)
+    ? selectedIds.map((id) => catalogue.categories.find((category) => category.id === id)).filter((category): category is NonNullable<typeof category> => Boolean(category)).slice(0, 12)
     : catalogue.categories.filter((category) => category.parentId === null).slice(0, section.limit);
   return <section className={`sf-section sf-categories ${section.type === "categories" ? "sf-category-carousel" : "sf-category-cards-section"}`} data-layout={section.layout}>
     <div className="sf-heading-with-action"><div className="sf-section-heading">{section.eyebrow && <span className="sf-eyebrow">{section.eyebrow}</span>}<h2>{section.heading}</h2>{section.description && <p>{section.description}</p>}</div><SectionAction section={section} preview={preview} secondary /></div>
