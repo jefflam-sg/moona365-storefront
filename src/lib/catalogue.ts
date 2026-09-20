@@ -1,5 +1,5 @@
 import { loadHomepageCatalogue as load, loadPublicCategories as loadCategories, loadPublicCollections as loadCollections, loadPublicProducts as loadProducts } from "./catalogue-core.mjs";
-import type { HomepageCatalogue, PublicCategory, PublicCollection, PublicProduct, StorefrontSnapshot } from "@/storefront/contracts";
+import type { HomepageCatalogue, PublicCategory, PublicCollection, PublicProduct, PublicProductListing, StorefrontSnapshot } from "@/storefront/contracts";
 
 export async function loadHomepageCatalogue(host: string, snapshot: StorefrontSnapshot): Promise<HomepageCatalogue | null> {
   return (await load(host, snapshot)) as HomepageCatalogue | null;
@@ -29,4 +29,8 @@ export async function loadNavigationCatalogue(host: string, snapshot?: Storefron
 export async function loadStorefrontProducts(host: string, query: { source: "newest" | "collection" | "manual" | "category"; collectionId?: string; categoryId?: string; includeSubcategories?: boolean; productIds?: string[]; limit?: number; page?: number }): Promise<PublicProduct[] | null> {
   const result = await loadProducts(host, query);
   return result ? result.products as PublicProduct[] : null;
+}
+export async function loadStorefrontListing(host: string, query: { source: "newest" | "collection" | "category" | "search"; collectionId?: string; categoryId?: string; includeSubcategories?: boolean; limit?: number; page?: number; search?: string; sort?: string; minPrice?: string; maxPrice?: string; inStock?: boolean }): Promise<PublicProductListing | null> {
+  const result = await loadProducts(host, query);
+  return result as PublicProductListing | null;
 }

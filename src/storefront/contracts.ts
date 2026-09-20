@@ -194,6 +194,14 @@ export type PublicProduct = {
     purchasable: boolean;
   }>;
 };
+export type PublicProductListing = {
+  apiVersion: 1;
+  resolvedHost: string;
+  siteId: string;
+  calculatedAt: string;
+  products: PublicProduct[];
+  pagination: { page: number; pageSize: number; total: number; pageCount: number };
+};
 
 export type HomepageCatalogue = {
   categories: PublicCategory[];

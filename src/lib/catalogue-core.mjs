@@ -38,8 +38,10 @@ export function isCategoriesResponse(value, host) {
 }
 
 export function isProductsResponse(value, host) {
-  return exact(value, ["apiVersion", "resolvedHost", "siteId", "calculatedAt", "products"]) &&
+  return exact(value, ["apiVersion", "resolvedHost", "siteId", "calculatedAt", "products", "pagination"]) &&
     value.apiVersion === 1 && value.resolvedHost === host && text(value.siteId) && text(value.calculatedAt) &&
+    exact(value.pagination, ["page", "pageSize", "total", "pageCount"]) &&
+    [value.pagination.page, value.pagination.pageSize, value.pagination.total, value.pagination.pageCount].every((item) => Number.isSafeInteger(item) && item >= 0) &&
     Array.isArray(value.products) && value.products.every((product) =>
       exact(product, ["id", "slug", "name", "shortDescription", "primaryImage", "collectionIds", "variants"]) &&
       [product.id, product.slug, product.name, product.shortDescription].every(text) && validImage(product.primaryImage) &&
@@ -77,6 +79,11 @@ export async function loadPublicProducts(host, query, options = {}) {
   const root = baseUrl.replace(/\/$/, "");
   const params = new URLSearchParams({ host, source: query.source, limit: String(query.limit ?? 12) });
   if (query.page) params.set("page", String(query.page));
+  if (query.search) params.set("search", query.search);
+  if (query.sort && query.sort !== "featured") params.set("sort", query.sort);
+  if (query.minPrice !== undefined && query.minPrice !== "") params.set("minPrice", String(query.minPrice));
+  if (query.maxPrice !== undefined && query.maxPrice !== "") params.set("maxPrice", String(query.maxPrice));
+  if (query.inStock) params.set("inStock", "true");
   if (query.collectionId) params.set("collectionId", query.collectionId);
   if (query.categoryId) params.set("categoryId", query.categoryId);
   if (query.source === "category") params.set("includeSubcategories", String(Boolean(query.includeSubcategories)));
