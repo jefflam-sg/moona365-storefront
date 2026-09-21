@@ -21,5 +21,5 @@ export default async function CategoryPage({ params, searchParams }: { params: P
   const pathParts = category.path.split(" > ");
   const breadcrumbs = pathParts.map((label, index) => ({ label, href: index === pathParts.length - 1 ? undefined : `/categories/${pathParts.slice(0, index + 1).map(slugPart).join("/")}` }));
   const children = catalogue.categories.filter((item) => item.parentId === category.id);
-  return <StorefrontPageShell snapshot={result.snapshot} catalogue={catalogue}><ProductListingPage title={category.name} eyebrow="CATEGORY" basePath={`/categories/${canonicalSlug}`} query={query} listing={listing} filters={filters.filterSet.items} breadcrumbs={breadcrumbs} childCategories={children} /></StorefrontPageShell>;
+  return <StorefrontPageShell snapshot={result.snapshot} catalogue={catalogue}><ProductListingPage title={category.name} eyebrow="CATEGORY" basePath={`/categories/${canonicalSlug}`} query={query} listing={listing} filters={filters.filterSet.items} breadcrumbs={breadcrumbs} childCategories={children} headingStyle={category.hasChildren ? "banner" : "plain"} headingImage={category.hasChildren ? category.image : null} /></StorefrontPageShell>;
 }
