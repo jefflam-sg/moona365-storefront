@@ -1,5 +1,5 @@
 export type BrandAsset = { src: string; alt: string };
-export type WebsiteFont = "system-sans" | "classic-serif" | "humanist-sans";
+export type WebsiteFont = "system-sans" | "open-sans" | "classic-serif" | "humanist-sans";
 
 export type WebsiteDesign = {
   schemaVersion: 1;
@@ -140,6 +140,7 @@ export type HomepageSection = {
   tabs: Array<{ id: string; label: string; collectionId: string }>;
   items: SectionItem[];
   groups?: ServiceGroup[];
+  colors?: { background: string; panel: string; card: string; accent: string; text: string; mutedText: string };
 };
 
 export type StorefrontSnapshot = {

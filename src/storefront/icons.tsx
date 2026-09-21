@@ -2,7 +2,7 @@ import type { StorefrontIconName } from "./contracts";
 
 export function StorefrontIcon({ name }: { name: StorefrontIconName | "search" | "account" | "cart" | "arrow" }) {
   return (
-    <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+    <svg aria-hidden="true" viewBox="-1 -1 26 26" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
       {name === "search" && <><circle cx="10" cy="10" r="6" /><path d="m15 15 5 5" /></>}
       {name === "account" && <><circle cx="12" cy="8" r="4" /><path d="M4 21a8 8 0 0 1 16 0" /></>}
       {name === "cart" && <><path d="M5 7h14l1 14H4L5 7Z" /><path d="M8 8V6a4 4 0 0 1 8 0v2" /></>}

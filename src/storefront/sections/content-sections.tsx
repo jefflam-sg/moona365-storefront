@@ -1,5 +1,6 @@
 /* eslint-disable @next/next/no-img-element -- URLs are tenant content validated by the backend contract. */
 import Link from "next/link";
+import type { CSSProperties } from "react";
 import type { HomepageSection } from "../contracts";
 import { StorefrontIcon } from "../icons";
 import { safeDestination, safeImageSource } from "../safe-values";
@@ -54,8 +55,17 @@ export function ServicesSection({ section, preview }: { section: HomepageSection
 }
 
 export function GroupedServicesSection({ section, preview }: { section: HomepageSection; preview: boolean }) {
+  const colors = section.colors;
+  const style = colors ? {
+    "--ssg-background": colors.background || "color-mix(in srgb,var(--retail-secondary) 45%,var(--retail-background))",
+    "--ssg-panel": colors.panel || "color-mix(in srgb,var(--retail-surface) 96%,var(--retail-secondary))",
+    "--ssg-card": colors.card || "var(--retail-surface)",
+    "--ssg-accent": colors.accent || "var(--retail-primary)",
+    "--ssg-text": colors.text || "var(--retail-text)",
+    "--ssg-muted": colors.mutedText || "var(--retail-textMuted)",
+  } as CSSProperties : undefined;
   return (
-    <section className="sf-section sf-grouped-services" data-section-id={section.id}>
+    <section className="sf-section sf-grouped-services" style={style} data-section-id={section.id}>
       <div className="sf-grouped-panel">
         <div className="sf-grouped-heading"><SectionHeading section={section} /></div>
         <div className="sf-service-groups">{section.groups?.map((group) => (
