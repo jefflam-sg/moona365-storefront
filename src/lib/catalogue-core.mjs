@@ -54,11 +54,19 @@ export function isFilterConfigurationResponse(value, host) {
     [entry.key, entry.sourceType, entry.customerLabel, entry.presentation, entry.valueSort].every(text) &&
     typeof entry.multipleSelection === "boolean" && typeof entry.showProductCount === "boolean" &&
     Number.isSafeInteger(entry.maxInitiallyVisible) && entry.maxInitiallyVisible >= 1;
+  const legacyKeys = ["id", "name", "scopeType", "scopeId", "items"];
+  const provenanceKeys = [...legacyKeys, "inherited", "requestedScopeType", "requestedScopeId"];
+  const validSetShape = record(value?.filterSet) &&
+    (exact(value.filterSet, legacyKeys) || exact(value.filterSet, provenanceKeys));
   return exact(value, ["apiVersion", "resolvedHost", "siteId", "filterSet"]) &&
     value.apiVersion === 1 && value.resolvedHost === host && text(value.siteId) &&
-    exact(value.filterSet, ["id", "name", "scopeType", "scopeId", "items"]) &&
+    validSetShape &&
     [value.filterSet.id, value.filterSet.name, value.filterSet.scopeType].every(text) &&
     (value.filterSet.scopeId === null || text(value.filterSet.scopeId)) &&
+    (!Object.hasOwn(value.filterSet, "inherited") ||
+      (typeof value.filterSet.inherited === "boolean" &&
+       text(value.filterSet.requestedScopeType) &&
+       (value.filterSet.requestedScopeId === null || text(value.filterSet.requestedScopeId)))) &&
     Array.isArray(value.filterSet.items) && value.filterSet.items.every(item);
 }
 

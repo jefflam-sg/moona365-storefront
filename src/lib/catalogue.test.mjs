@@ -37,6 +37,15 @@ test("validates bounded public catalogue responses and rejects private fields", 
   assert.equal(isCategoriesResponse(categoryResponse, host), true);
   assert.equal(isProductsResponse(productResponse, host), true);
   assert.equal(isFilterConfigurationResponse(filterResponse, host), true);
+  assert.equal(isFilterConfigurationResponse({
+    ...filterResponse,
+    filterSet: {
+      ...filterResponse.filterSet,
+      inherited: true,
+      requestedScopeType: "CATEGORY",
+      requestedScopeId: "biscuits",
+    },
+  }, host), true);
   const legacyResponse = structuredClone(productResponse);
   delete legacyResponse.products[0].variants[0].primaryImage;
   assert.equal(isProductsResponse(legacyResponse, host), true);

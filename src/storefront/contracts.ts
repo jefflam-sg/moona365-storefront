@@ -212,9 +212,12 @@ export type PublicFilterConfiguration = {
     name: string;
     scopeType: "DEFAULT" | "CATEGORY" | "COLLECTION";
     scopeId: string | null;
+    inherited?: boolean;
+    requestedScopeType?: "DEFAULT" | "CATEGORY" | "COLLECTION";
+    requestedScopeId?: string | null;
     items: Array<{
       key: string;
-      sourceType: "CATEGORY" | "ATTRIBUTE" | "PRICE" | "IN_STOCK";
+      sourceType: "CATEGORY" | "ATTRIBUTE" | "SPECIFICATION" | "BRAND" | "PRICE" | "IN_STOCK";
       customerLabel: string;
       presentation: "CHECKBOX" | "CHIP" | "IMAGE" | "COLOR_SWATCH" | "PRICE_RANGE" | "BINARY_TOGGLE";
       multipleSelection: boolean;
