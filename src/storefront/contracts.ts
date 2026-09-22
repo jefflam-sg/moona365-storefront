@@ -202,6 +202,7 @@ export type PublicProductListing = {
   calculatedAt: string;
   products: PublicProduct[];
   pagination: { page: number; pageSize: number; total: number; pageCount: number };
+  facets: Array<{ key: string; values: Array<{ value: string; label: string; count: number }> }>;
 };
 export type PublicFilterConfiguration = {
   apiVersion: 1;

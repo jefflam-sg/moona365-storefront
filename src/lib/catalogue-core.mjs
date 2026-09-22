@@ -38,7 +38,9 @@ export function isCategoriesResponse(value, host) {
 }
 
 export function isProductsResponse(value, host) {
-  return exact(value, ["apiVersion", "resolvedHost", "siteId", "calculatedAt", "products", "pagination"]) &&
+  const keys = ["apiVersion", "resolvedHost", "siteId", "calculatedAt", "products", "pagination"];
+  const hasFacets = exact(value, [...keys, "facets"]);
+  return (exact(value, keys) || hasFacets) &&
     value.apiVersion === 1 && value.resolvedHost === host && text(value.siteId) && text(value.calculatedAt) &&
     exact(value.pagination, ["page", "pageSize", "total", "pageCount"]) &&
     [value.pagination.page, value.pagination.pageSize, value.pagination.total, value.pagination.pageCount].every((item) => Number.isSafeInteger(item) && item >= 0) &&
@@ -46,7 +48,11 @@ export function isProductsResponse(value, host) {
       exact(product, ["id", "slug", "name", "shortDescription", "primaryImage", "collectionIds", "variants"]) &&
       [product.id, product.slug, product.name, product.shortDescription].every(text) && validImage(product.primaryImage) &&
       Array.isArray(product.collectionIds) && product.collectionIds.every(text) && Array.isArray(product.variants) &&
-      product.variants.every(validVariant));
+      product.variants.every(validVariant)) &&
+    (!hasFacets || (Array.isArray(value.facets) && value.facets.every((facet) =>
+      exact(facet, ["key", "values"]) && text(facet.key) && Array.isArray(facet.values) &&
+      facet.values.every((entry) => exact(entry, ["value", "label", "count"]) &&
+        text(entry.value) && text(entry.label) && Number.isSafeInteger(entry.count) && entry.count >= 0))));
 }
 
 export function isFilterConfigurationResponse(value, host) {
@@ -105,6 +111,9 @@ export async function loadPublicProducts(host, query, options = {}) {
   if (query.minPrice !== undefined && query.minPrice !== "") params.set("minPrice", String(query.minPrice));
   if (query.maxPrice !== undefined && query.maxPrice !== "") params.set("maxPrice", String(query.maxPrice));
   if (query.inStock) params.set("inStock", "true");
+  for (const [key, values] of Object.entries(query.filters ?? {})) {
+    if (values.length) params.set(`f.${key}`, values.join(","));
+  }
   if (query.collectionId) params.set("collectionId", query.collectionId);
   if (query.categoryId) params.set("categoryId", query.categoryId);
   if (query.source === "category") params.set("includeSubcategories", String(Boolean(query.includeSubcategories)));

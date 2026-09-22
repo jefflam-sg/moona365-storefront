@@ -30,7 +30,7 @@ export async function loadStorefrontProducts(host: string, query: { source: "new
   const result = await loadProducts(host, query);
   return result ? result.products as PublicProduct[] : null;
 }
-export async function loadStorefrontListing(host: string, query: { source: "newest" | "collection" | "category" | "search"; collectionId?: string; categoryId?: string; includeSubcategories?: boolean; limit?: number; page?: number; search?: string; sort?: string; minPrice?: string; maxPrice?: string; inStock?: boolean }): Promise<PublicProductListing | null> {
+export async function loadStorefrontListing(host: string, query: { source: "newest" | "collection" | "category" | "search"; collectionId?: string; categoryId?: string; includeSubcategories?: boolean; limit?: number; page?: number; search?: string; sort?: string; minPrice?: string; maxPrice?: string; inStock?: boolean; filters?: Record<string, string[]> }): Promise<PublicProductListing | null> {
   const result = await loadProducts(host, query);
   return result as PublicProductListing | null;
 }
