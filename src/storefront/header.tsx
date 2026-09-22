@@ -8,6 +8,7 @@ import { StorefrontIcon } from "./icons";
 import { resolveNavigation, type ResolvedNavigationNode } from "./navigation";
 import { safeImageSource } from "./safe-values";
 import { CART_EVENT, cartCount } from "./commerce-local";
+import { LiveProductSearch } from "./live-product-search";
 
 export function StorefrontBrand({ design, preview = false }: { design: WebsiteDesign; preview?: boolean }) {
   const { brand } = design;
@@ -59,7 +60,7 @@ export function StorefrontHeader({ design, preview, navigation, catalogue = { ca
     {header.showAnnouncement && <div className="sf-announcement">{header.announcement}</div>}
     <div className="sf-header-main sf-width">
       <div className="sf-brand"><StorefrontBrand design={design} preview={preview} /></div>
-      {header.showSearch && <form className="sf-header-search" action="/search" onSubmit={preview ? (event) => event.preventDefault() : undefined}><label><span className="sf-visually-hidden">Search products</span><input name="q" type="search" placeholder="Search for products…" /></label><button type="submit" aria-label="Search"><StorefrontIcon name="search" /></button></form>}
+      {header.showSearch && <LiveProductSearch preview={preview} />}
       <button type="button" className="sf-mobile-menu-button" aria-expanded={mobile} aria-label={mobile ? "Close navigation" : "Open navigation"} onClick={() => setMobile((value) => !value)}><MenuIcon /></button>
       <nav className="sf-navigation" data-mobile-open={mobile} aria-label="Main navigation"><ul>{items.map((item) => {
         const expandable = item.children.length > 0 || Boolean(item.promo);
