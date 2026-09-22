@@ -12,10 +12,13 @@ const validVariantImage = (value) => value === null || (exact(value, ["mediaAsse
 const validVariant = (variant) => {
   const legacyKeys = ["id", "label", "price", "availability", "purchasable"];
   const imageKeys = ["id", "label", "primaryImage", "price", "availability", "purchasable"];
-  return (exact(variant, legacyKeys) || exact(variant, imageKeys)) &&
+  const commerceKeys = [...imageKeys, "compareAtPrice"];
+  return (exact(variant, legacyKeys) || exact(variant, imageKeys) || exact(variant, commerceKeys)) &&
     text(variant.id) && text(variant.label) &&
     (!Object.hasOwn(variant, "primaryImage") || validVariantImage(variant.primaryImage)) &&
     exact(variant.price, ["amount", "currency"]) && text(variant.price.amount) && text(variant.price.currency) &&
+    (!Object.hasOwn(variant, "compareAtPrice") || variant.compareAtPrice === null ||
+      (exact(variant.compareAtPrice, ["amount", "currency"]) && text(variant.compareAtPrice.amount) && text(variant.compareAtPrice.currency))) &&
     ["AVAILABLE", "SOLD_OUT", "UNAVAILABLE"].includes(variant.availability) && typeof variant.purchasable === "boolean";
 };
 
@@ -45,8 +48,11 @@ export function isProductsResponse(value, host) {
     exact(value.pagination, ["page", "pageSize", "total", "pageCount"]) &&
     [value.pagination.page, value.pagination.pageSize, value.pagination.total, value.pagination.pageCount].every((item) => Number.isSafeInteger(item) && item >= 0) &&
     Array.isArray(value.products) && value.products.every((product) =>
-      exact(product, ["id", "slug", "name", "shortDescription", "primaryImage", "collectionIds", "variants"]) &&
+      (exact(product, ["id", "slug", "name", "shortDescription", "primaryImage", "collectionIds", "variants"]) ||
+       exact(product, ["id", "slug", "name", "shortDescription", "variantOptionName", "isNew", "primaryImage", "collectionIds", "variants"])) &&
       [product.id, product.slug, product.name, product.shortDescription].every(text) && validImage(product.primaryImage) &&
+      (!Object.hasOwn(product, "variantOptionName") || product.variantOptionName === null || text(product.variantOptionName)) &&
+      (!Object.hasOwn(product, "isNew") || typeof product.isNew === "boolean") &&
       Array.isArray(product.collectionIds) && product.collectionIds.every(text) && Array.isArray(product.variants) &&
       product.variants.every(validVariant)) &&
     (!hasFacets || (Array.isArray(value.facets) && value.facets.every((facet) =>

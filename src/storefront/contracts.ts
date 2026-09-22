@@ -184,6 +184,8 @@ export type PublicProduct = {
   slug: string;
   name: string;
   shortDescription: string;
+  variantOptionName?: string | null;
+  isNew?: boolean;
   primaryImage: BrandAsset | null;
   collectionIds: string[];
   variants: Array<{
@@ -191,6 +193,7 @@ export type PublicProduct = {
     label: string;
     primaryImage?: (BrandAsset & { mediaAssetId: string }) | null;
     price: { amount: string; currency: string };
+    compareAtPrice?: { amount: string; currency: string } | null;
     availability: "AVAILABLE" | "SOLD_OUT" | "UNAVAILABLE";
     purchasable: boolean;
   }>;

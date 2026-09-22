@@ -7,6 +7,7 @@ import type { HomepageCatalogue, WebsiteDesign, WebsiteNavigation } from "./cont
 import { StorefrontIcon } from "./icons";
 import { resolveNavigation, type ResolvedNavigationNode } from "./navigation";
 import { safeImageSource } from "./safe-values";
+import { CART_EVENT, cartCount } from "./commerce-local";
 
 export function StorefrontBrand({ design, preview = false }: { design: WebsiteDesign; preview?: boolean }) {
   const { brand } = design;
@@ -36,6 +37,7 @@ export function StorefrontHeader({ design, preview, navigation, catalogue = { ca
   const pathname = usePathname();
   const [open, setOpen] = useState<string | null>(null);
   const [mobile, setMobile] = useState(false);
+  const [cartItems, setCartItems] = useState(0);
   const root = useRef<HTMLElement>(null);
 
   useEffect(() => {
@@ -44,6 +46,11 @@ export function StorefrontHeader({ design, preview, navigation, catalogue = { ca
     document.addEventListener("pointerdown", close);
     document.addEventListener("keydown", escape);
     return () => { document.removeEventListener("pointerdown", close); document.removeEventListener("keydown", escape); };
+  }, []);
+  useEffect(() => {
+    const update = () => setCartItems(cartCount());
+    update(); window.addEventListener(CART_EVENT, update); window.addEventListener("storage", update);
+    return () => { window.removeEventListener(CART_EVENT, update); window.removeEventListener("storage", update); };
   }, []);
 
   const nested = (children: ResolvedNavigationNode[]) => <ul>{children.map((child) => <li key={child.id}><NavLink item={child} preview={preview} />{child.children.length > 0 && nested(child.children)}</li>)}</ul>;
@@ -68,7 +75,7 @@ export function StorefrontHeader({ design, preview, navigation, catalogue = { ca
       })}</ul></nav>
       <div className="sf-tools" aria-label="Store tools">
         <button type="button" disabled={preview} aria-label="Account"><StorefrontIcon name="account" /></button>
-        <button type="button" disabled={preview} aria-label="Cart"><StorefrontIcon name="cart" /><sup>0</sup></button>
+        <button type="button" disabled={preview} aria-label={`Cart, ${cartItems} item${cartItems === 1 ? "" : "s"}`}><StorefrontIcon name="cart" /><sup>{cartItems}</sup></button>
       </div>
     </div>
   </header>;

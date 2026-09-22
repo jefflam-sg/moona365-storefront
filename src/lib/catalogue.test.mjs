@@ -49,6 +49,10 @@ test("validates bounded public catalogue responses and rejects private fields", 
   const legacyResponse = structuredClone(productResponse);
   delete legacyResponse.products[0].variants[0].primaryImage;
   assert.equal(isProductsResponse(legacyResponse, host), true);
+  const commerceResponse = structuredClone(productResponse);
+  Object.assign(commerceResponse.products[0], { variantOptionName: "Pack size", isNew: true });
+  commerceResponse.products[0].variants[0].compareAtPrice = { amount: "9.50", currency: "SGD" };
+  assert.equal(isProductsResponse(commerceResponse, host), true);
   assert.equal(isProductsResponse({ ...productResponse, orgId: "private" }, host), false);
   assert.equal(isProductsResponse({ ...productResponse, resolvedHost: "other.example.com" }, host), false);
 });
