@@ -1,5 +1,5 @@
 export type BrandAsset = { src: string; alt: string };
-export type WebsiteFont = "system-sans" | "open-sans" | "classic-serif" | "humanist-sans";
+export type WebsiteFont = "system-sans" | "open-sans" | "rubik" | "classic-serif" | "humanist-sans";
 
 export type WebsiteDesign = {
   schemaVersion: 1;

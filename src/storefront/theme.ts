@@ -4,6 +4,7 @@ import type { WebsiteDesign, WebsiteFont } from "./contracts";
 const fontFamilies: Record<WebsiteFont, string> = {
   "system-sans": "Arial, Helvetica, sans-serif",
   "open-sans": "'Open Sans', Arial, Helvetica, sans-serif",
+  rubik: "'Rubik', Arial, Helvetica, sans-serif",
   "classic-serif": "Georgia, 'Times New Roman', serif",
   "humanist-sans": "'Trebuchet MS', Arial, sans-serif",
 };
