@@ -97,7 +97,17 @@ export function ProductDetail({ product, initialVariantId, recommendations = [],
 
   const chooseVariant = (variant: Variant) => {
     setSelectedVariantId(variant.id);
-    const source = variant.primaryImage ? safeImageSource(variant.primaryImage.src) : null;
+    const source =
+      (variant.primaryImage ? safeImageSource(variant.primaryImage.src) : null) ??
+      (product.primaryImage ? safeImageSource(product.primaryImage.src) : null) ??
+      images[0]?.src ??
+      null;
+    if (source) setActiveImage(source);
+    setNotice("");
+  };
+  const clearVariant = () => {
+    setSelectedVariantId("");
+    const source = product.primaryImage ? safeImageSource(product.primaryImage.src) : null;
     if (source) setActiveImage(source);
     setNotice("");
   };
@@ -139,14 +149,14 @@ export function ProductDetail({ product, initialVariantId, recommendations = [],
     <article className="sf-product-detail">
       <section className="sf-pdp-gallery" data-has-thumbnails={images.length > 1} aria-label={`${product.name} images`}>
         {images.length > 1 && <div className="sf-pdp-thumbnails">{images.map((image, index) => <button type="button" key={image.src} className={index === activeIndex ? "is-active" : ""} aria-label={`View image ${index + 1}`} aria-pressed={index === activeIndex} onClick={() => setActiveImage(image.src)}><img src={image.src} alt="" /></button>)}</div>}
-        <div className="sf-product-detail-image" onPointerMove={(event) => { if (event.pointerType === "touch") return; const bounds = event.currentTarget.getBoundingClientRect(); const image = event.currentTarget.querySelector(":scope > img") as HTMLElement | null; image?.style.setProperty("--pdp-image-x", `${(((event.clientX - bounds.left) / bounds.width) - .5) * -12}px`); image?.style.setProperty("--pdp-image-y", `${(((event.clientY - bounds.top) / bounds.height) - .5) * -12}px`); }} onPointerLeave={(event) => { const image = event.currentTarget.querySelector(":scope > img") as HTMLElement | null; image?.style.setProperty("--pdp-image-x", "0px"); image?.style.setProperty("--pdp-image-y", "0px"); }}>{active ? <img src={active.src} alt={active.alt || product.name} /> : <div className="sf-catalogue-placeholder" aria-hidden="true" />}{product.isNew && <span className="sf-pdp-badge">NEW</span>}{images.length > 1 && <><button type="button" className="sf-pdp-image-arrow sf-pdp-image-previous" aria-label="Previous image" onClick={() => moveImage(-1)}>‹</button><button type="button" className="sf-pdp-image-arrow sf-pdp-image-next" aria-label="Next image" onClick={() => moveImage(1)}>›</button></>} {active && <button type="button" className="sf-pdp-expand" aria-label="View image full screen" onClick={() => setFullScreen(true)}>⛶</button>}</div>
+        <div className="sf-product-detail-image" onPointerMove={(event) => { if (event.pointerType === "touch") return; const bounds = event.currentTarget.getBoundingClientRect(); const image = event.currentTarget.querySelector(":scope > img") as HTMLElement | null; image?.style.setProperty("--pdp-image-x", `${(((event.clientX - bounds.left) / bounds.width) - .5) * -12}px`); image?.style.setProperty("--pdp-image-y", `${(((event.clientY - bounds.top) / bounds.height) - .5) * -12}px`); }} onPointerLeave={(event) => { const image = event.currentTarget.querySelector(":scope > img") as HTMLElement | null; image?.style.setProperty("--pdp-image-x", "0px"); image?.style.setProperty("--pdp-image-y", "0px"); }}>{active ? <img src={active.src} alt={active.alt || product.name} /> : <div className="sf-catalogue-placeholder" aria-hidden="true" />}{product.isNew && <span className="sf-pdp-badge">NEW</span>}{images.length > 1 && <><button type="button" className="sf-pdp-image-arrow sf-pdp-image-previous" aria-label="Previous image" onClick={() => moveImage(-1)}><svg aria-hidden="true" viewBox="0 0 24 24"><path d="m15 5-7 7 7 7" /></svg></button><button type="button" className="sf-pdp-image-arrow sf-pdp-image-next" aria-label="Next image" onClick={() => moveImage(1)}><svg aria-hidden="true" viewBox="0 0 24 24"><path d="m9 5 7 7-7 7" /></svg></button></>} {active && <button type="button" className="sf-pdp-expand" aria-label="View image full screen" onClick={() => setFullScreen(true)}>⛶</button>}</div>
       </section>
       <section className="sf-pdp-summary">
         {product.isNew && <span className="sf-pdp-label">New arrival</span>}
         <h1>{product.name}</h1>
         {product.shortDescription && <p className="sf-pdp-short-description">{product.shortDescription}</p>}
         <strong className="sf-pdp-price">{productPrice(product, selectedVariant)}</strong>
-        {product.variants.length > 0 && <fieldset className={`sf-pdp-options ${notice.startsWith("Please") ? "has-missing" : ""}`}><legend>{product.variantOptionName || "Choose an option"}</legend><div>{product.variants.map((variant) => <button type="button" key={variant.id} disabled={!variant.purchasable} aria-pressed={selectedVariantId === variant.id} onClick={() => chooseVariant(variant)}><b>{variant.label || "Standard"}</b></button>)}</div>{product.variants.length > 1 && selectedVariant && <button className="sf-pdp-clear" type="button" onClick={() => setSelectedVariantId("")}>Clear selection</button>}</fieldset>}
+        {product.variants.length > 0 && <fieldset className={`sf-pdp-options ${notice.startsWith("Please") ? "has-missing" : ""}`}><legend>{product.variantOptionName || "Choose an option"}</legend><div>{product.variants.map((variant) => <button type="button" key={variant.id} disabled={!variant.purchasable} aria-pressed={selectedVariantId === variant.id} onClick={() => chooseVariant(variant)}><b>{variant.label || "Standard"}</b></button>)}</div>{product.variants.length > 1 && selectedVariant && <button className="sf-pdp-clear" type="button" onClick={clearVariant}>Clear selection</button>}</fieldset>}
         <div className="sf-pdp-quantity"><span>Quantity</span><div><button type="button" aria-label="Decrease quantity" onClick={() => setQuantity((value) => Math.max(1, value - 1))}>−</button><input aria-label="Quantity" type="number" inputMode="numeric" min="1" max="99" value={quantity} onFocus={(event) => event.currentTarget.select()} onChange={(event) => setQuantity(Math.min(99, Math.max(1, Number(event.target.value) || 1)))} /><button type="button" aria-label="Increase quantity" onClick={() => setQuantity((value) => Math.min(99, value + 1))}>+</button></div></div>
         <p className="sf-pdp-stock" data-available={Boolean(selectedVariant?.purchasable)}>{selectedVariant ? (selectedVariant.purchasable ? "● In stock" : "Sold out") : `Select ${product.variantOptionName || "an option"} to see availability`}</p>
         <div className="sf-pdp-actions"><button type="button" onClick={add} disabled={Boolean(selectedVariant && !selectedVariant.purchasable)}>Add to Cart</button><button type="button" className="sf-pdp-wishlist" aria-pressed={wishlisted} onClick={() => setWishlisted(toggleWishlist(product.id))}>{wishlisted ? "♥ Saved to Wishlist" : "♡ Add to Wishlist"}</button></div>
