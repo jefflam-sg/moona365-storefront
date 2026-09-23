@@ -17,5 +17,11 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
   const [products, catalogue] = await Promise.all([loadStorefrontProducts(result.resolvedHost, { source: "manual", productIds: [id], limit: 1 }), loadNavigationCatalogue(result.resolvedHost, result.snapshot)]);
   const product = products?.find((entry) => entry.id === id);
   if (!product) notFound();
-  return <StorefrontPageShell snapshot={result.snapshot} catalogue={catalogue ?? undefined}><ProductDetail product={product} /></StorefrontPageShell>;
+  let related = await loadStorefrontProducts(result.resolvedHost, product.collectionIds[0] ? { source: "collection", collectionId: product.collectionIds[0], limit: 8 } : { source: "newest", limit: 8 });
+  let recommendations = (related ?? []).filter((entry) => entry.id !== product.id).slice(0, 5);
+  if (product.collectionIds[0] && recommendations.length === 0) {
+    related = await loadStorefrontProducts(result.resolvedHost, { source: "newest", limit: 8 });
+    recommendations = (related ?? []).filter((entry) => entry.id !== product.id).slice(0, 5);
+  }
+  return <StorefrontPageShell snapshot={result.snapshot} catalogue={catalogue ?? undefined}><ProductDetail product={product} recommendations={recommendations} /></StorefrontPageShell>;
 }
