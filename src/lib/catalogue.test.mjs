@@ -62,6 +62,18 @@ test("validates bounded public catalogue responses and rejects private fields", 
     specifications: [{ code: "country-of-origin", label: "Country of Origin", icon: "globe", displayValue: "Peru", values: [], table: null }],
   });
   assert.equal(isProductsResponse(detailResponse, host), true);
+  const richDescriptionResponse = structuredClone(detailResponse);
+  richDescriptionResponse.products[0].descriptionContent = {
+    version: 1,
+    blocks: [
+      { type: "paragraph", text: "Opening paragraph." },
+      { type: "image", src: "https://cdn.example.com/chia.webp", alt: "Chia seeds", caption: "Serving suggestion", placement: "right", text: "Use in smoothies." },
+    ],
+  };
+  richDescriptionResponse.products[0].specifications[0].icon = "ingredient-bowl";
+  assert.equal(isProductsResponse(richDescriptionResponse, host), true);
+  richDescriptionResponse.products[0].descriptionContent.blocks[1].src = "javascript:alert(1)";
+  assert.equal(isProductsResponse(richDescriptionResponse, host), false);
   assert.equal(isProductsResponse({ ...productResponse, orgId: "private" }, host), false);
   assert.equal(isProductsResponse({ ...productResponse, resolvedHost: "other.example.com" }, host), false);
 });

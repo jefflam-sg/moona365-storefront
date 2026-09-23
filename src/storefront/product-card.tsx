@@ -54,7 +54,7 @@ export function ProductCard({ product }: { product: PublicProduct }) {
   const purchasableVariants = product.variants.filter((variant) => variant.purchasable);
   const badgeVariant = resolved ?? (purchasableVariants.length > 0 && purchasableVariants.every((variant) => variant.compareAtPrice) ? purchasableVariants[0] : undefined);
   const saleBadge = discountBadge(badgeVariant);
-  const displayName = targeted?.label || product.name;
+  const displayName = product.name;
   const href = `/products/${product.slug}${targeted ? `?variant=${encodeURIComponent(targeted.id)}` : ""}`;
   useEffect(() => {
     const frame = requestAnimationFrame(() => setWishlisted(wishlistHas(product.id)));

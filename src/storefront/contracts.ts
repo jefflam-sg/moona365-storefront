@@ -104,7 +104,10 @@ export type StorefrontIconName =
   | "storage"
   | "package"
   | "ruler"
-  | "shield";
+  | "shield"
+  | "heart-leaf"
+  | "book-open"
+  | "ingredient-bowl";
 
 export type SectionItem = {
   id: string;
@@ -195,6 +198,20 @@ export type PublicProduct = {
   name: string;
   shortDescription: string;
   longDescription?: string;
+  descriptionContent?: {
+    version: 1;
+    blocks: Array<
+      | { type: "paragraph"; text: string }
+      | {
+          type: "image";
+          src: string;
+          alt: string;
+          caption: string;
+          placement: "full" | "left" | "right";
+          text: string;
+        }
+    >;
+  } | null;
   specifications?: Array<{
     code: string;
     label: string;

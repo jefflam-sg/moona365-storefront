@@ -39,6 +39,17 @@ function productPrice(product: PublicProduct, selected?: Variant) {
   return Number(low.price.amount) === Number(high.price.amount) ? money(low.price.amount, low.price.currency) : `${money(low.price.amount, low.price.currency)} – ${money(high.price.amount, high.price.currency)}`;
 }
 
+function RichDescription({ product }: { product: PublicProduct }) {
+  const content = product.descriptionContent;
+  if (!content?.blocks.length)
+    return product.longDescription || product.shortDescription ? <p>{product.longDescription || product.shortDescription}</p> : null;
+  return <div className="sf-rich-description">{content.blocks.map((block, index) => {
+    if (block.type === "paragraph") return <p key={`paragraph-${index}`}>{block.text}</p>;
+    const src = safeImageSource(block.src); if (!src) return null;
+    return <div className={`sf-rich-description-image sf-rich-description-${block.placement}`} key={`image-${index}`}><figure><img src={src} alt={block.alt} />{block.caption && <figcaption>{block.caption}</figcaption>}</figure>{block.placement !== "full" && block.text && <p>{block.text}</p>}</div>;
+  })}</div>;
+}
+
 export function ProductDetail({ product, initialVariantId, recommendations = [], frequentlyBoughtTogether = [], bottomSections = [], catalogue = { categories: [], collections: [], productsBySectionId: {} } }: { product: PublicProduct; initialVariantId?: string; recommendations?: PublicProduct[]; frequentlyBoughtTogether?: PublicProduct[]; bottomSections?: HomepageSection[]; catalogue?: HomepageCatalogue }) {
   const initialVariant = product.variants.find((variant) => variant.id === initialVariantId) ?? (product.variants.length === 1 ? product.variants[0] : undefined);
   const [selectedVariantId, setSelectedVariantId] = useState(initialVariant?.id ?? "");
@@ -133,7 +144,7 @@ export function ProductDetail({ product, initialVariantId, recommendations = [],
         <section className="sf-pdp-share" aria-label="Share this product"><b>Share this product</b><div><button type="button" onClick={() => void share("native")} aria-label="Share or copy product link"><ShareIcon name="share" /></button><button type="button" onClick={() => void share("whatsapp")} aria-label="Share on WhatsApp"><ShareIcon name="whatsapp" /></button><button type="button" onClick={() => void share("facebook")} aria-label="Share on Facebook"><ShareIcon name="facebook" /></button><button type="button" onClick={() => void share("email")} aria-label="Share by email"><ShareIcon name="email" /></button><button type="button" onClick={() => void share("pinterest")} aria-label="Share on Pinterest"><ShareIcon name="pinterest" /></button></div></section>
       </section>
     </article>
-    {(product.longDescription || product.shortDescription) && <section className="sf-pdp-description"><h2>Description</h2><p>{product.longDescription || product.shortDescription}</p></section>}
+    {(product.descriptionContent?.blocks.length || product.longDescription || product.shortDescription) && <section className="sf-pdp-description"><h2>Description</h2><RichDescription product={product} /></section>}
     {frequentlyBoughtTogether.length > 0 && <section className="sf-pdp-bundle"><header><h2>Frequently Bought Together</h2><p>Complete your purchase with these popular pairings.</p></header><div className="sf-pdp-bundle-products">{frequentlyBoughtTogether.map((item) => <ProductCard key={`${item.id}:${item.selectedVariantId ?? "all"}`} product={item} />)}</div></section>}
     {recommendations.length > 0 && <section className="sf-pdp-related sf-plp-results"><header><div><h2>You May Also Like</h2><p>More products you might enjoy.</p></div><Link href="/shop">View All</Link></header><div className="sf-product-grid sf-pdp-related-products">{recommendations.map((item) => <ProductCard key={`${item.id}:${item.selectedVariantId ?? "all"}`} product={item} />)}</div></section>}
     {bottomSections.map((section) => renderHomepageSection(section, false, catalogue))}

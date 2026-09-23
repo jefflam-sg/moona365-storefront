@@ -21,7 +21,7 @@ const validVariant = (variant) => {
       (exact(variant.compareAtPrice, ["amount", "currency"]) && text(variant.compareAtPrice.amount) && text(variant.compareAtPrice.currency))) &&
     ["AVAILABLE", "SOLD_OUT", "UNAVAILABLE"].includes(variant.availability) && typeof variant.purchasable === "boolean";
 };
-const specificationIcons = new Set(["info", "globe", "leaf", "nutrition", "storage", "package", "ruler", "shield"]);
+const specificationIcons = new Set(["info", "globe", "leaf", "nutrition", "storage", "package", "ruler", "shield", "heart-leaf", "book-open", "ingredient-bowl"]);
 const validSpecification = (item) => exact(item, ["code", "label", "icon", "displayValue", "values", "table"]) &&
   [item.code, item.label, item.displayValue].every(text) &&
   (item.icon === null || specificationIcons.has(item.icon)) &&
@@ -29,6 +29,13 @@ const validSpecification = (item) => exact(item, ["code", "label", "icon", "disp
   (item.table === null || (exact(item.table, ["caption", "rows"]) && text(item.table.caption) &&
     Array.isArray(item.table.rows) && item.table.rows.every((row) =>
       exact(row, ["label", "value", "unit"]) && [row.label, row.value, row.unit].every(text))));
+const validDescriptionContent = (value) => value === null ||
+  (exact(value, ["version", "blocks"]) && value.version === 1 && Array.isArray(value.blocks) && value.blocks.length <= 40 &&
+    value.blocks.every((block) =>
+      (exact(block, ["type", "text"]) && block.type === "paragraph" && text(block.text) && block.text.length <= 5000) ||
+      (exact(block, ["type", "src", "alt", "caption", "placement", "text"]) && block.type === "image" &&
+       safeImageSource(block.src) && text(block.alt) && block.alt.length <= 180 && text(block.caption) && block.caption.length <= 300 &&
+       ["full", "left", "right"].includes(block.placement) && text(block.text) && block.text.length <= 5000)));
 
 export function isCollectionsResponse(value, host) {
   return exact(value, ["apiVersion", "resolvedHost", "siteId", "calculatedAt", "collections"]) &&
@@ -60,9 +67,12 @@ export function isProductsResponse(value, host) {
        exact(product, ["id", "slug", "name", "shortDescription", "variantOptionName", "isNew", "primaryImage", "collectionIds", "variants"]) ||
        exact(product, ["id", "slug", "name", "shortDescription", "variantOptionName", "isNew", "primaryImage", "collectionIds", "selectedVariantId", "variants"]) ||
        exact(product, ["id", "slug", "name", "shortDescription", "longDescription", "specifications", "variantOptionName", "isNew", "primaryImage", "collectionIds", "variants"]) ||
-       exact(product, ["id", "slug", "name", "shortDescription", "longDescription", "specifications", "variantOptionName", "isNew", "primaryImage", "collectionIds", "selectedVariantId", "variants"])) &&
+       exact(product, ["id", "slug", "name", "shortDescription", "longDescription", "specifications", "variantOptionName", "isNew", "primaryImage", "collectionIds", "selectedVariantId", "variants"]) ||
+       exact(product, ["id", "slug", "name", "shortDescription", "longDescription", "descriptionContent", "specifications", "variantOptionName", "isNew", "primaryImage", "collectionIds", "variants"]) ||
+       exact(product, ["id", "slug", "name", "shortDescription", "longDescription", "descriptionContent", "specifications", "variantOptionName", "isNew", "primaryImage", "collectionIds", "selectedVariantId", "variants"])) &&
       [product.id, product.slug, product.name, product.shortDescription].every(text) && validImage(product.primaryImage) &&
       (!Object.hasOwn(product, "longDescription") || text(product.longDescription)) &&
+      (!Object.hasOwn(product, "descriptionContent") || validDescriptionContent(product.descriptionContent)) &&
       (!Object.hasOwn(product, "specifications") || (Array.isArray(product.specifications) && product.specifications.every(validSpecification))) &&
       (!Object.hasOwn(product, "variantOptionName") || product.variantOptionName === null || text(product.variantOptionName)) &&
       (!Object.hasOwn(product, "isNew") || typeof product.isNew === "boolean") &&
