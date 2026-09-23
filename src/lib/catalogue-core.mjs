@@ -58,12 +58,15 @@ export function isProductsResponse(value, host) {
     Array.isArray(value.products) && value.products.every((product) =>
       (exact(product, ["id", "slug", "name", "shortDescription", "primaryImage", "collectionIds", "variants"]) ||
        exact(product, ["id", "slug", "name", "shortDescription", "variantOptionName", "isNew", "primaryImage", "collectionIds", "variants"]) ||
-       exact(product, ["id", "slug", "name", "shortDescription", "longDescription", "specifications", "variantOptionName", "isNew", "primaryImage", "collectionIds", "variants"])) &&
+       exact(product, ["id", "slug", "name", "shortDescription", "variantOptionName", "isNew", "primaryImage", "collectionIds", "selectedVariantId", "variants"]) ||
+       exact(product, ["id", "slug", "name", "shortDescription", "longDescription", "specifications", "variantOptionName", "isNew", "primaryImage", "collectionIds", "variants"]) ||
+       exact(product, ["id", "slug", "name", "shortDescription", "longDescription", "specifications", "variantOptionName", "isNew", "primaryImage", "collectionIds", "selectedVariantId", "variants"])) &&
       [product.id, product.slug, product.name, product.shortDescription].every(text) && validImage(product.primaryImage) &&
       (!Object.hasOwn(product, "longDescription") || text(product.longDescription)) &&
       (!Object.hasOwn(product, "specifications") || (Array.isArray(product.specifications) && product.specifications.every(validSpecification))) &&
       (!Object.hasOwn(product, "variantOptionName") || product.variantOptionName === null || text(product.variantOptionName)) &&
       (!Object.hasOwn(product, "isNew") || typeof product.isNew === "boolean") &&
+      (!Object.hasOwn(product, "selectedVariantId") || product.selectedVariantId === null || text(product.selectedVariantId)) &&
       Array.isArray(product.collectionIds) && product.collectionIds.every(text) && Array.isArray(product.variants) &&
       product.variants.every(validVariant)) &&
     (!hasFacets || (Array.isArray(value.facets) && value.facets.every((facet) =>

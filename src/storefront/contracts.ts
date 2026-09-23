@@ -210,6 +210,7 @@ export type PublicProduct = {
   isNew?: boolean;
   primaryImage: BrandAsset | null;
   collectionIds: string[];
+  selectedVariantId?: string | null;
   variants: Array<{
     id: string;
     label: string;
