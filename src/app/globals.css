@@ -284,9 +284,8 @@ button, input { font: inherit; }
 .sf-pdp-more h2{padding-top:0}
 .sf-pdp-more h2>span{display:block}
 .sf-pdp-more h2>svg{display:block;width:min(200px,60%);height:20px;margin-top:2px;overflow:visible}
-.sf-pdp-more h2 path{fill:none;stroke:var(--retail-primary);stroke-width:1.6;stroke-linecap:round;stroke-dasharray:240;stroke-dashoffset:240;animation:sf-pdp-heading-stroke 2s ease-out infinite}
-.sf-pdp-more h2 path:nth-child(2){stroke-width:1.25;opacity:.82;animation-delay:.08s}.sf-pdp-more h2 path:nth-child(3){stroke-width:1;opacity:.68;animation-delay:.16s}.sf-pdp-more h2 path:nth-child(4){stroke-width:.85;opacity:.52;animation-delay:.24s}
-@keyframes sf-pdp-heading-stroke{0%,8%{stroke-dashoffset:240;opacity:0}12%{opacity:1}48%,92%{stroke-dashoffset:0}93%,100%{stroke-dashoffset:240;opacity:0}}
+.sf-pdp-more h2 path{fill:none;stroke:var(--retail-primary);stroke-width:1.35;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:1;stroke-dashoffset:1;vector-effect:non-scaling-stroke;animation:sf-pdp-heading-stroke 2s ease-in-out infinite}
+@keyframes sf-pdp-heading-stroke{0%,7%{stroke-dashoffset:1;opacity:0}9%{opacity:1}76%,93%{stroke-dashoffset:0;opacity:1}94%,100%{stroke-dashoffset:1;opacity:0}}
 .sf-pdp-share button{color:#111;background:var(--retail-surface);border-color:color-mix(in srgb,#111 48%,var(--retail-border))}
 .sf-pdp-share button:hover,.sf-pdp-share button:focus-visible{color:var(--retail-primary);background:var(--retail-surface);border-color:var(--retail-primary)}
 .sf-pdp-share svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
