@@ -45,7 +45,7 @@ export function ProductCard({ product }: { product: PublicProduct }) {
   const [wishlisted, setWishlisted] = useState(false);
   const [added, setAdded] = useState(false);
   const selected = product.variants.find((variant) => variant.id === selectedId);
-  const inlineOptions = Boolean(product.variantOptionName && product.variants.length > 1 && product.variants.length <= 8);
+  const inlineOptions = Boolean(product.variantOptionName && product.variants.length > 0 && product.variants.length <= 8);
   const resolved = selected ?? direct;
   const image = resolved?.primaryImage ?? product.primaryImage;
   const src = image ? safeImageSource(image.src) : null;
@@ -100,7 +100,7 @@ function QuickView({ product, selectedId, onSelect, onClose, onAdd }: { product:
     <button className="sf-quick-close" type="button" aria-label="Close Quick View" onClick={onClose}>×</button>
     <div className="sf-quick-image">{image && src ? <img src={src} alt={image.alt || product.name} /> : <div className="sf-catalogue-placeholder" />}</div>
     <div><h2>{product.name}</h2><div className="sf-card-price">{price.original && <del>{price.original}</del>}<strong>{price.current}</strong></div>{product.shortDescription && <p>{product.shortDescription}</p>}
-      {product.variants.length > 1 && <fieldset><legend>{product.variantOptionName || "Choose an option"}</legend><div className="sf-quick-options">{product.variants.map((variant) => <button type="button" key={variant.id} disabled={!variant.purchasable} aria-pressed={selectedId === variant.id} onClick={() => onSelect(variant)}>{variant.label || "Standard"}</button>)}</div></fieldset>}
+      {product.variantOptionName && product.variants.length > 0 && <fieldset><legend>{product.variantOptionName}</legend><div className="sf-quick-options">{product.variants.map((variant) => <button type="button" key={variant.id} disabled={!variant.purchasable} aria-pressed={selectedId === variant.id} onClick={() => onSelect(variant)}>{variant.label || "Standard"}</button>)}</div></fieldset>}
       <p className="sf-availability">{selected ? (selected.purchasable ? "In stock" : "Sold out") : "Select an option to continue"}</p>
       <div className="sf-quick-buy"><label>Quantity<input type="number" min="1" max="99" value={quantity} onChange={(event) => setQuantity(Math.max(1, Math.min(99, Number(event.target.value) || 1)))} /></label><button type="button" disabled={!selected?.purchasable} onClick={() => onAdd(quantity)}>{selected ? (selected.purchasable ? "Add to Cart" : "Sold Out") : "Select Options"}</button></div>
       <Link href={`/products/${product.id}`}>View Full Details →</Link>
