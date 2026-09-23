@@ -8,7 +8,7 @@ import type { PublicCategory } from "../contracts";
 import { safeImageSource } from "../safe-values";
 import { categoryHref } from "../category-url";
 
-export function CategoryCarousel({ categories, preview }: { categories: PublicCategory[]; preview: boolean }) {
+function useCategoryCarouselNavigation(categoryCount: number) {
   const trackRef = useRef<HTMLDivElement | null>(null);
   const [canMoveBack, setCanMoveBack] = useState(false);
   const [canMoveForward, setCanMoveForward] = useState(false);
@@ -38,10 +38,21 @@ export function CategoryCarousel({ categories, preview }: { categories: PublicCa
       observer.disconnect();
       track.removeEventListener("scroll", updateNavigation);
     };
-  }, [categories.length, updateNavigation]);
+  }, [categoryCount, updateNavigation]);
+
+  return { trackRef, canMoveBack, canMoveForward, move };
+}
+
+function Arrow({ direction, disabled, onClick }: { direction: "previous" | "next"; disabled: boolean; onClick: () => void }) {
+  const previous = direction === "previous";
+  return <button type="button" className={`sf-category-arrow sf-category-arrow-${direction}`} aria-label={`${previous ? "Previous" : "Next"} categories`} disabled={disabled} onClick={onClick}><svg viewBox="0 0 24 24" aria-hidden="true"><path d={previous ? "m15 18-6-6 6-6" : "m9 18 6-6-6-6"} /></svg></button>;
+}
+
+export function CategoryCarousel({ categories, preview }: { categories: PublicCategory[]; preview: boolean }) {
+  const { trackRef, canMoveBack, canMoveForward, move } = useCategoryCarouselNavigation(categories.length);
 
   return <div className="sf-category-carousel-shell">
-    <button type="button" className="sf-category-arrow sf-category-arrow-previous" aria-label="Previous categories" disabled={!canMoveBack} onClick={() => move(-1)}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6" /></svg></button>
+    <Arrow direction="previous" disabled={!canMoveBack} onClick={() => move(-1)} />
     <div className="sf-category-track" ref={trackRef}>
       {categories.map((category) => {
         const src = category.image ? safeImageSource(category.image.src) : null;
@@ -51,6 +62,20 @@ export function CategoryCarousel({ categories, preview }: { categories: PublicCa
         </Link>;
       })}
     </div>
-    <button type="button" className="sf-category-arrow sf-category-arrow-next" aria-label="Next categories" disabled={!canMoveForward} onClick={() => move(1)}><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6" /></svg></button>
+    <Arrow direction="next" disabled={!canMoveForward} onClick={() => move(1)} />
+  </div>;
+}
+
+export function ChildCategoryCarousel({ categories, label }: { categories: PublicCategory[]; label: string }) {
+  const { trackRef, canMoveBack, canMoveForward, move } = useCategoryCarouselNavigation(categories.length);
+  return <div className="sf-child-category-carousel-shell">
+    <Arrow direction="previous" disabled={!canMoveBack} onClick={() => move(-1)} />
+    <div className="sf-child-categories" role="navigation" aria-label={label} ref={trackRef}>
+      {categories.map((category) => {
+        const src = category.image ? safeImageSource(category.image.src) : null;
+        return <Link key={category.id} href={categoryHref(category)}>{src ? <img src={src} alt="" /> : <span aria-hidden="true" />}{category.name}</Link>;
+      })}
+    </div>
+    <Arrow direction="next" disabled={!canMoveForward} onClick={() => move(1)} />
   </div>;
 }

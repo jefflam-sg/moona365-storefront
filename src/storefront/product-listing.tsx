@@ -1,9 +1,9 @@
 import Link from "next/link";
 import type { PublicCategory, PublicFilterConfiguration, PublicProductListing } from "./contracts";
-import { categoryHref } from "./category-url";
 import { ProductCard } from "./catalogue-page";
 import { ListingSort } from "./listing-sort";
 import { ProductFilterPanel } from "./product-filter-panel";
+import { ChildCategoryCarousel } from "./sections/category-carousel";
 
 /* Public catalogue image URLs are validated by the backend response contract. */
 /* eslint-disable @next/next/no-img-element */
@@ -56,7 +56,7 @@ export function ProductListingPage({ title, description, eyebrow, basePath, quer
     <div className="sf-plp-layout" data-no-filters={availableFilters.length === 0}>
       {availableFilters.length > 0 && <aside className="sf-filter-sidebar"><ProductFilterPanel items={availableFilters} facets={listing.facets ?? []} query={query} /></aside>}
       <div className="sf-plp-main"><header className="sf-plp-heading" data-style={headingStyle} data-has-image={Boolean(headingStyle === "banner" && headingImage)}><div>{headingStyle === "banner" && eyebrow !== "CATEGORY" && <span className="sf-eyebrow">{eyebrow}</span>}<h1>{title}</h1>{description && <p>{description}</p>}</div>{headingStyle === "banner" && headingImage && <img src={headingImage.src} alt={headingImage.alt} />}</header>
-      {childCategories.length > 0 && <nav className="sf-child-categories" aria-label={title + " categories"}>{childCategories.map((category) => <Link key={category.id} href={categoryHref(category)}>{category.image ? <img src={category.image.src} alt="" /> : <span aria-hidden="true" />}{category.name}</Link>)}</nav>}
+      {childCategories.length > 0 && <ChildCategoryCarousel categories={childCategories} label={title + " categories"} />}
       <section className="sf-plp-results"><div className="sf-plp-toolbar"><strong>{listing.pagination.total} product{listing.pagination.total === 1 ? "" : "s"}</strong><SortForm basePath={basePath} query={query} /></div>
         {activeCount > 0 && <div className="sf-active-filters">{Object.entries(query.filters).flatMap(([key, values]) => values.map((value) => <Link key={`${key}-${value}`} href={hrefWith(basePath, query, { [`f.${key}`]: values.filter((item) => item !== value).join(",") || null, page: null })}>{facetLabels.get(`${key}\0${value}`) ?? value} ×</Link>))}{priceEnabled && (query.minPrice || query.maxPrice) && <Link href={hrefWith(basePath, query, { minPrice: null, maxPrice: null, page: null })}>{"$" + (query.minPrice || "0") + "–$" + (query.maxPrice || "Any") + " ×"}</Link>}{stockEnabled && query.inStock && <Link href={hrefWith(basePath, query, { inStock: null, page: null })}>In stock ×</Link>}<Link className="sf-clear-filters" href={hrefWith(basePath, query, clearAllChanges)}>Clear all</Link></div>}
         {listing.products.length ? <div className="sf-product-grid">{listing.products.map((product) => <ProductCard key={product.id} product={product} />)}</div> : <p className="sf-empty">No products match these filters.</p>}
