@@ -26,7 +26,7 @@ export async function loadNavigationCatalogue(host: string, snapshot?: Storefron
   return { categories, collections, productsBySectionId: products.length ? { __navigation: products } : {} };
 }
 
-export async function loadStorefrontProducts(host: string, query: { source: "newest" | "collection" | "manual" | "category"; collectionId?: string; categoryId?: string; includeSubcategories?: boolean; productIds?: string[]; limit?: number; page?: number }): Promise<PublicProduct[] | null> {
+export async function loadStorefrontProducts(host: string, query: { source: "newest" | "collection" | "manual" | "category"; collectionId?: string; categoryId?: string; includeSubcategories?: boolean; productIds?: string[]; productSlug?: string; limit?: number; page?: number }): Promise<PublicProduct[] | null> {
   const result = await loadProducts(host, query);
   return result ? result.products as PublicProduct[] : null;
 }

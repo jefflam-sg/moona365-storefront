@@ -83,6 +83,7 @@ export type SectionType =
   | "product-showcase"
   | "stats"
   | "services"
+  | "brand-values"
   | "product-page-brand-values"
   | "articles"
   | "newsletter"
@@ -156,6 +157,7 @@ export type StorefrontSnapshot = {
   theme: { code: "retail-natural"; version: 1 };
   design: WebsiteDesign;
   homepage: { schemaVersion: 1; sections: HomepageSection[] };
+  pages?: { product: { schemaVersion: 1; sections: HomepageSection[] } };
   navigation?: WebsiteNavigation;
 };
 

@@ -135,6 +135,7 @@ export async function loadPublicProducts(host, query, options = {}) {
   if (query.categoryId) params.set("categoryId", query.categoryId);
   if (query.source === "category") params.set("includeSubcategories", String(Boolean(query.includeSubcategories)));
   for (const id of query.productIds ?? []) params.append("productId", id);
+  if (query.productSlug) params.set("productSlug", query.productSlug);
   return getJson(`${root}/public/storefront/v1/products?${params}`, host, isProductsResponse, fetchImpl);
 }
 

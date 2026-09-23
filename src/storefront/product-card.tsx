@@ -53,7 +53,7 @@ export function ProductCard({ product }: { product: PublicProduct }) {
   const purchasableVariants = product.variants.filter((variant) => variant.purchasable);
   const badgeVariant = resolved ?? (purchasableVariants.length > 0 && purchasableVariants.every((variant) => variant.compareAtPrice) ? purchasableVariants[0] : undefined);
   const saleBadge = discountBadge(badgeVariant);
-  const href = `/products/${product.id}`;
+  const href = `/products/${product.slug}`;
   useEffect(() => {
     const frame = requestAnimationFrame(() => setWishlisted(wishlistHas(product.id)));
     return () => cancelAnimationFrame(frame);
@@ -103,7 +103,7 @@ function QuickView({ product, selectedId, onSelect, onClose, onAdd }: { product:
       {product.variantOptionName && product.variants.length > 0 && <fieldset><legend>{product.variantOptionName}</legend><div className="sf-quick-options">{product.variants.map((variant) => <button type="button" key={variant.id} disabled={!variant.purchasable} aria-pressed={selectedId === variant.id} onClick={() => onSelect(variant)}>{variant.label || "Standard"}</button>)}</div></fieldset>}
       <p className="sf-availability">{selected ? (selected.purchasable ? "In stock" : "Sold out") : "Select an option to continue"}</p>
       <div className="sf-quick-buy"><label>Quantity<input type="number" min="1" max="99" value={quantity} onChange={(event) => setQuantity(Math.max(1, Math.min(99, Number(event.target.value) || 1)))} /></label><button type="button" disabled={!selected?.purchasable} onClick={() => onAdd(quantity)}>{selected ? (selected.purchasable ? "Add to Cart" : "Sold Out") : "Select Options"}</button></div>
-      <Link href={`/products/${product.id}`}>View Full Details →</Link>
+      <Link href={`/products/${product.slug}`}>View Full Details →</Link>
     </div>
   </section></div>;
 }

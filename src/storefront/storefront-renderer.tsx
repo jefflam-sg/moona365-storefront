@@ -24,5 +24,5 @@ export function StorefrontRenderer({ snapshot, preview = false, catalogue = { ca
 }
 
 export function supportsPublishedSnapshot(snapshot: StorefrontSnapshot) {
-  return unsupportedVisibleSections(snapshot.homepage.sections).length === 0;
+  return unsupportedVisibleSections([...snapshot.homepage.sections, ...(snapshot.pages?.product.sections ?? [])]).length === 0;
 }

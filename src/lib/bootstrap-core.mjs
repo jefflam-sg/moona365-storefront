@@ -13,6 +13,8 @@ const bootstrapKeys = [
 ];
 const legacySnapshotKeys = ["contractVersion", "theme", "design", "homepage"];
 const navigationSnapshotKeys = [...legacySnapshotKeys, "navigation"];
+const pagesSnapshotKeys = [...legacySnapshotKeys, "pages"];
+const pagesNavigationSnapshotKeys = [...legacySnapshotKeys, "pages", "navigation"];
 const registeredBlocks = new Set([
   "hero",
   "categories",
@@ -20,6 +22,7 @@ const registeredBlocks = new Set([
   "product-showcase",
   "stats",
   "services",
+  "brand-values",
   "product-page-brand-values",
   "articles",
   "newsletter",
@@ -64,7 +67,7 @@ export function normalizeRequestedHost(value) {
 function isSnapshotEnvelope(value) {
   if (
     !isRecord(value) ||
-    (!hasExactKeys(value, legacySnapshotKeys) && !hasExactKeys(value, navigationSnapshotKeys)) ||
+    (![legacySnapshotKeys, navigationSnapshotKeys, pagesSnapshotKeys, pagesNavigationSnapshotKeys].some((keys) => hasExactKeys(value, keys))) ||
     value.contractVersion !== 1 ||
     !isRecord(value.theme) ||
     !hasExactKeys(value.theme, ["code", "version"]) ||
@@ -75,12 +78,14 @@ function isSnapshotEnvelope(value) {
     !hasExactKeys(value.homepage, ["schemaVersion", "sections"]) ||
     value.homepage.schemaVersion !== 1 ||
     !Array.isArray(value.homepage.sections) ||
-    value.homepage.sections.length > 20
+    value.homepage.sections.length > 20 ||
+    (value.pages !== undefined && (!isRecord(value.pages) || !hasExactKeys(value.pages, ["product"]) || !isRecord(value.pages.product) || !hasExactKeys(value.pages.product, ["schemaVersion", "sections"]) || value.pages.product.schemaVersion !== 1 || !Array.isArray(value.pages.product.sections) || value.pages.product.sections.length > 20))
   )
     return false;
 
-  const ids = new Set();
-  return value.homepage.sections.every((section) => {
+  const validSections = (sections) => {
+    const ids = new Set();
+    return sections.every((section) => {
     if (
       !isRecord(section) ||
       typeof section.id !== "string" ||
@@ -94,7 +99,9 @@ function isSnapshotEnvelope(value) {
       return false;
     ids.add(section.id);
     return true;
-  });
+    });
+  };
+  return validSections(value.homepage.sections) && (value.pages === undefined || validSections(value.pages.product.sections));
 }
 
 export function isPublicBootstrap(value, requestedHost) {

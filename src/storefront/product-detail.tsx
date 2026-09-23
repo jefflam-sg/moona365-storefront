@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import type { HomepageSection, PublicProduct } from "./contracts";
+import type { HomepageCatalogue, HomepageSection, PublicProduct } from "./contracts";
 import { addCartLine, toggleWishlist, wishlistHas } from "./commerce-local";
 import { StorefrontIcon } from "./icons";
 import { ProductCard } from "./product-card";
 import { safeImageSource } from "./safe-values";
+import { renderHomepageSection } from "./sections/registry";
 
 /* Tenant media sources are validated by the public catalogue boundary. */
 /* eslint-disable @next/next/no-img-element */
@@ -38,7 +39,7 @@ function productPrice(product: PublicProduct, selected?: Variant) {
   return Number(low.price.amount) === Number(high.price.amount) ? money(low.price.amount, low.price.currency) : `${money(low.price.amount, low.price.currency)} – ${money(high.price.amount, high.price.currency)}`;
 }
 
-export function ProductDetail({ product, recommendations = [], frequentlyBoughtTogether = [], brandValues }: { product: PublicProduct; recommendations?: PublicProduct[]; frequentlyBoughtTogether?: PublicProduct[]; brandValues?: HomepageSection }) {
+export function ProductDetail({ product, recommendations = [], frequentlyBoughtTogether = [], bottomSections = [], catalogue = { categories: [], collections: [], productsBySectionId: {} } }: { product: PublicProduct; recommendations?: PublicProduct[]; frequentlyBoughtTogether?: PublicProduct[]; bottomSections?: HomepageSection[]; catalogue?: HomepageCatalogue }) {
   const initialVariant = product.variants.length === 1 ? product.variants[0] : undefined;
   const [selectedVariantId, setSelectedVariantId] = useState(initialVariant?.id ?? "");
   const [quantity, setQuantity] = useState(1);
@@ -135,7 +136,7 @@ export function ProductDetail({ product, recommendations = [], frequentlyBoughtT
     {(product.longDescription || product.shortDescription) && <section className="sf-pdp-description"><h2>Description</h2><p>{product.longDescription || product.shortDescription}</p></section>}
     {frequentlyBoughtTogether.length > 0 && <section className="sf-pdp-bundle"><header><h2>Frequently Bought Together</h2><p>Complete your purchase with these popular pairings.</p></header><div className="sf-pdp-bundle-products">{frequentlyBoughtTogether.map((item) => <ProductCard key={item.id} product={item} />)}</div></section>}
     {recommendations.length > 0 && <section className="sf-pdp-related sf-plp-results"><header><div><h2>You May Also Like</h2><p>More products you might enjoy.</p></div><Link href="/shop">View All</Link></header><div className="sf-product-grid sf-pdp-related-products">{recommendations.map((item) => <ProductCard key={item.id} product={item} />)}</div></section>}
-    {brandValues && brandValues.items.length > 0 && <section className="sf-pdp-brand-values" aria-label={brandValues.heading || "Our values"}>{brandValues.items.map((item) => <article key={item.id}><StorefrontIcon name={item.icon} /><span><strong>{item.title}</strong>{item.description && <small>{item.description}</small>}</span></article>)}</section>}
+    {bottomSections.map((section) => renderHomepageSection(section, false, catalogue))}
     {fullScreen && active && <div className="sf-pdp-lightbox" role="dialog" aria-modal="true" aria-label={`${product.name} full-screen image`} onMouseDown={(event) => event.target === event.currentTarget && setFullScreen(false)}><button type="button" aria-label="Close full-screen image" onClick={() => setFullScreen(false)}>×</button><img src={active.src} alt={active.alt || product.name} /></div>}
   </>;
 }

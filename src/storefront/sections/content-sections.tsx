@@ -54,6 +54,11 @@ export function ServicesSection({ section, preview }: { section: HomepageSection
   );
 }
 
+export function BrandValuesSection({ section }: { section: HomepageSection; preview: boolean }) {
+  if (!section.items.length) return null;
+  return <section className="sf-pdp-brand-values sf-width" data-section-id={section.id} aria-label={section.heading || "Our values"}>{section.items.map((item) => <article key={item.id}><StorefrontIcon name={item.icon} /><span><strong>{item.title}</strong>{item.description && <small>{item.description}</small>}</span></article>)}</section>;
+}
+
 export function GroupedServicesSection({ section, preview }: { section: HomepageSection; preview: boolean }) {
   const colors = section.colors;
   const style = colors ? {

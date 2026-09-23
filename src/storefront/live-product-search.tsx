@@ -6,12 +6,12 @@ import { useEffect, useId, useRef, useState } from "react";
 import { StorefrontIcon } from "./icons";
 import { safeImageSource } from "./safe-values";
 
-type Suggestion = { id: string; name: string; image: { src: string; alt: string } | null };
+type Suggestion = { id: string; slug: string; name: string; image: { src: string; alt: string } | null };
 
 function isSuggestion(value: unknown): value is Suggestion {
   if (!value || typeof value !== "object") return false;
   const item = value as Record<string, unknown>;
-  if (typeof item.id !== "string" || typeof item.name !== "string") return false;
+  if (typeof item.id !== "string" || typeof item.slug !== "string" || typeof item.name !== "string") return false;
   if (item.image === null) return true;
   if (!item.image || typeof item.image !== "object") return false;
   const image = item.image as Record<string, unknown>;
@@ -59,7 +59,7 @@ export function LiveProductSearch({ preview }: { preview: boolean }) {
   const chooseActive = () => {
     const selected = suggestions[active];
     if (!selected) return false;
-    window.location.assign(`/products/${selected.id}`);
+    window.location.assign(`/products/${selected.slug}`);
     return true;
   };
 
@@ -83,7 +83,7 @@ export function LiveProductSearch({ preview }: { preview: boolean }) {
       {loading && <p className="sf-search-message" role="status">Searching…</p>}
       {!loading && suggestions.map((suggestion, index) => {
         const image = suggestion.image && safeImageSource(suggestion.image.src);
-        return <Link id={`${listId}-${index}`} key={suggestion.id} role="option" aria-selected={active === index} href={`/products/${suggestion.id}`} onMouseEnter={() => setActive(index)} onFocus={() => setActive(index)} onClick={() => setOpen(false)}>
+        return <Link id={`${listId}-${index}`} key={suggestion.id} role="option" aria-selected={active === index} href={`/products/${suggestion.slug}`} onMouseEnter={() => setActive(index)} onFocus={() => setActive(index)} onClick={() => setOpen(false)}>
           <span className="sf-search-thumb">{image ? <img src={image} alt="" /> : null}</span><span>{suggestion.name}</span><b aria-hidden="true">→</b>
         </Link>;
       })}

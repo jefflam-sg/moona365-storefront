@@ -15,7 +15,7 @@ function destination(destination: NavigationDestination, catalogue: HomepageCata
   if (destination.type === "SYSTEM_PAGE") return { href: { HOME: "/", SHOP: "/shop", CATEGORIES: "/categories", COLLECTIONS: "/collections" }[destination.page], label: destination.page[0] + destination.page.slice(1).toLowerCase() };
   if (destination.type === "CUSTOM_URL") { const href = safeCustom(destination.url); return href ? { href, label: destination.url } : null; }
   if (destination.type === "PRODUCT_CATEGORY") { const category = catalogue.categories.find((item) => item.id === destination.categoryId); return category ? { href: `/categories/${categoryPathSlug(category.path)}${destination.includeSubcategories ? "?includeSubcategories=true" : ""}`, label: category.name, category } : null; }
-  if (destination.type === "PRODUCT") { const product = Object.values(catalogue.productsBySectionId).flat().find((item) => item.id === destination.productId); return product ? { href: `/products/${product.id}`, label: product.name } : null; }
+  if (destination.type === "PRODUCT") { const product = Object.values(catalogue.productsBySectionId).flat().find((item) => item.id === destination.productId); return product ? { href: `/products/${product.slug}`, label: product.name } : null; }
   const collection = catalogue.collections.find((item) => item.id === destination.collectionId); return collection ? { href: `/collections/${collection.slug}`, label: collection.name } : null;
 }
 export function resolveNavigation(kind: "main" | "footer", navigation: WebsiteNavigation | undefined, catalogue: HomepageCatalogue): ResolvedNavigationNode[] {

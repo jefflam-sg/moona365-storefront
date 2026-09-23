@@ -25,6 +25,7 @@ export async function GET(request: Request) {
     return NextResponse.json({
       suggestions: (listing?.products ?? []).map((product) => ({
         id: product.id,
+        slug: product.slug,
         name: product.name,
         image: product.primaryImage,
       })),
