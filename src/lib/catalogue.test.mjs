@@ -67,7 +67,8 @@ test("validates bounded public catalogue responses and rejects private fields", 
     version: 1,
     blocks: [
       { type: "paragraph", text: "Opening paragraph." },
-      { type: "image", src: "https://cdn.example.com/chia.webp", alt: "Chia seeds", caption: "Serving suggestion", placement: "right", text: "Use in smoothies." },
+      { type: "image", src: "https://cdn.example.com/chia.webp", alt: "Chia seeds", caption: "Serving suggestion", placement: "right", size: "medium", text: "Use in smoothies." },
+      { type: "video", provider: "youtube", videoId: "dQw4w9WgXcQ", title: "How to use chia seeds" },
     ],
   };
   richDescriptionResponse.products[0].specifications[0].icon = "ingredient-bowl";

@@ -208,8 +208,10 @@ export type PublicProduct = {
           alt: string;
           caption: string;
           placement: "full" | "left" | "right";
+          size: "small" | "medium" | "large" | "full";
           text: string;
         }
+      | { type: "video"; provider: "youtube"; videoId: string; title: string }
     >;
   } | null;
   specifications?: Array<{

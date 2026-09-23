@@ -33,9 +33,11 @@ const validDescriptionContent = (value) => value === null ||
   (exact(value, ["version", "blocks"]) && value.version === 1 && Array.isArray(value.blocks) && value.blocks.length <= 40 &&
     value.blocks.every((block) =>
       (exact(block, ["type", "text"]) && block.type === "paragraph" && text(block.text) && block.text.length <= 5000) ||
-      (exact(block, ["type", "src", "alt", "caption", "placement", "text"]) && block.type === "image" &&
+      (exact(block, ["type", "src", "alt", "caption", "placement", "size", "text"]) && block.type === "image" &&
        safeImageSource(block.src) && text(block.alt) && block.alt.length <= 180 && text(block.caption) && block.caption.length <= 300 &&
-       ["full", "left", "right"].includes(block.placement) && text(block.text) && block.text.length <= 5000)));
+       ["full", "left", "right"].includes(block.placement) && ["small", "medium", "large", "full"].includes(block.size) && text(block.text) && block.text.length <= 5000) ||
+      (exact(block, ["type", "provider", "videoId", "title"]) && block.type === "video" && block.provider === "youtube" &&
+       text(block.videoId) && /^[A-Za-z0-9_-]{11}$/.test(block.videoId) && text(block.title) && block.title.length <= 180)));
 
 export function isCollectionsResponse(value, host) {
   return exact(value, ["apiVersion", "resolvedHost", "siteId", "calculatedAt", "collections"]) &&

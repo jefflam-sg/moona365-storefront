@@ -41,13 +41,24 @@ function productPrice(product: PublicProduct, selected?: Variant) {
 
 function RichDescription({ product }: { product: PublicProduct }) {
   const content = product.descriptionContent;
+  const [videoPlayer, setVideoPlayer] = useState<{ videoId: string; title: string } | null>(null);
+  useEffect(() => {
+    if (!videoPlayer) return;
+    const close = (event: KeyboardEvent) => event.key === "Escape" && setVideoPlayer(null);
+    document.addEventListener("keydown", close);
+    return () => document.removeEventListener("keydown", close);
+  }, [videoPlayer]);
   if (!content?.blocks.length)
     return product.longDescription || product.shortDescription ? <p>{product.longDescription || product.shortDescription}</p> : null;
-  return <div className="sf-rich-description">{content.blocks.map((block, index) => {
+  return <><div className="sf-rich-description">{content.blocks.map((block, index) => {
     if (block.type === "paragraph") return <p key={`paragraph-${index}`}>{block.text}</p>;
+    if (block.type === "video") {
+      const title = block.title || "Product video";
+      return <button type="button" className="sf-rich-description-video" key={`video-${index}`} aria-label={`Play ${title}`} onClick={() => setVideoPlayer({ videoId: block.videoId, title })}><img src={`https://i.ytimg.com/vi/${block.videoId}/hqdefault.jpg`} alt="" /><span aria-hidden="true">▶</span><strong>{title}</strong></button>;
+    }
     const src = safeImageSource(block.src); if (!src) return null;
-    return <div className={`sf-rich-description-image sf-rich-description-${block.placement}`} key={`image-${index}`}><figure><img src={src} alt={block.alt} />{block.caption && <figcaption>{block.caption}</figcaption>}</figure>{block.placement !== "full" && block.text && <p>{block.text}</p>}</div>;
-  })}</div>;
+    return <div className={`sf-rich-description-image sf-rich-description-${block.placement} sf-rich-description-size-${block.size}`} key={`image-${index}`}><figure><img src={src} alt={block.alt} />{block.caption && <figcaption>{block.caption}</figcaption>}</figure>{block.placement !== "full" && block.text && <p>{block.text}</p>}</div>;
+  })}</div>{videoPlayer && <div className="sf-rich-video-modal" role="dialog" aria-modal="true" aria-label={videoPlayer.title} onClick={() => setVideoPlayer(null)}><div onClick={(event) => event.stopPropagation()}><button type="button" aria-label="Close video" onClick={() => setVideoPlayer(null)}>×</button><iframe src={`https://www.youtube-nocookie.com/embed/${videoPlayer.videoId}?autoplay=1&rel=0`} title={videoPlayer.title} allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowFullScreen /></div></div>}</>;
 }
 
 export function ProductDetail({ product, initialVariantId, recommendations = [], frequentlyBoughtTogether = [], bottomSections = [], catalogue = { categories: [], collections: [], productsBySectionId: {} } }: { product: PublicProduct; initialVariantId?: string; recommendations?: PublicProduct[]; frequentlyBoughtTogether?: PublicProduct[]; bottomSections?: HomepageSection[]; catalogue?: HomepageCatalogue }) {
