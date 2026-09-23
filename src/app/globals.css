@@ -283,14 +283,14 @@ button, input { font: inherit; }
 .sf-pdp-more{border-top:0}
 .sf-pdp-more h2{padding-top:0}
 .sf-pdp-more h2>span{display:block}
-.sf-pdp-more h2>svg{display:block;width:min(190px,55%);height:13px;margin-top:3px;overflow:visible}
-.sf-pdp-more h2 path{fill:none;stroke:var(--retail-primary);stroke-width:1.7;stroke-linecap:round;stroke-dasharray:240;stroke-dashoffset:240;animation:sf-pdp-heading-stroke .85s ease-out forwards}
-.sf-pdp-more h2 path+path{stroke-width:1;opacity:.65;animation-delay:.18s}
-@keyframes sf-pdp-heading-stroke{to{stroke-dashoffset:0}}
+.sf-pdp-more h2>svg{display:block;width:min(200px,60%);height:20px;margin-top:2px;overflow:visible}
+.sf-pdp-more h2 path{fill:none;stroke:var(--retail-primary);stroke-width:1.6;stroke-linecap:round;stroke-dasharray:240;stroke-dashoffset:240;animation:sf-pdp-heading-stroke 2s ease-out infinite}
+.sf-pdp-more h2 path:nth-child(2){stroke-width:1.25;opacity:.82;animation-delay:.08s}.sf-pdp-more h2 path:nth-child(3){stroke-width:1;opacity:.68;animation-delay:.16s}.sf-pdp-more h2 path:nth-child(4){stroke-width:.85;opacity:.52;animation-delay:.24s}
+@keyframes sf-pdp-heading-stroke{0%,8%{stroke-dashoffset:240;opacity:0}12%{opacity:1}48%,92%{stroke-dashoffset:0}93%,100%{stroke-dashoffset:240;opacity:0}}
 .sf-pdp-share button{color:#111;background:var(--retail-surface);border-color:color-mix(in srgb,#111 48%,var(--retail-border))}
 .sf-pdp-share button:hover,.sf-pdp-share button:focus-visible{color:var(--retail-primary);background:var(--retail-surface);border-color:var(--retail-primary)}
 .sf-pdp-share svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
-.sf-pdp-share .sf-share-icon-facebook{fill:currentColor;stroke:none}
+.sf-pdp-share .sf-share-icon-whatsapp{color:#25d366;fill:currentColor;stroke:none}.sf-pdp-share .sf-share-icon-facebook{color:#1877f2;fill:currentColor;stroke:none}.sf-pdp-share .sf-share-icon-pinterest{color:#e60023;fill:currentColor;stroke:none}.sf-pdp-share button:hover svg,.sf-pdp-share button:focus-visible svg{filter:brightness(.86);transform:scale(1.07)}
 .sf-pdp-brand-values{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));margin-top:clamp(56px,7vw,90px);padding:24px 20px;background:color-mix(in srgb,var(--retail-secondary) 45%,var(--retail-surface));border-block:1px solid color-mix(in srgb,var(--retail-border) 75%,transparent)}
 .sf-pdp-brand-values article{display:flex;min-width:0;align-items:center;justify-content:center;gap:13px;padding:10px 18px;border-right:1px solid color-mix(in srgb,var(--retail-border) 70%,transparent)}
 .sf-pdp-brand-values article:last-child{border-right:0}
