@@ -298,6 +298,7 @@ button, input { font: inherit; }
 .sf-pdp-brand-values span{display:grid;gap:2px}
 .sf-pdp-brand-values strong{font-weight:600}
 .sf-pdp-brand-values small{color:var(--retail-textMuted);line-height:1.35}
+.sf-pdp-quantity input{width:52px;height:38px;padding:0 4px;color:var(--retail-text);background:var(--retail-surface);border:0;border-inline:1px solid var(--retail-border);text-align:center;-moz-appearance:textfield}.sf-pdp-quantity input::-webkit-inner-spin-button,.sf-pdp-quantity input::-webkit-outer-spin-button{margin:0;-webkit-appearance:none}.sf-pdp-more summary{display:flex;align-items:center;gap:9px}.sf-pdp-spec-icon{display:grid;width:23px;height:23px;flex:0 0 auto;place-items:center;color:var(--retail-primary)}.sf-pdp-spec-icon svg{width:21px;height:21px}
 @media (hover:hover) and (pointer:fine){.sf-product-detail-image>img{transform:translate(var(--pdp-image-x,0),var(--pdp-image-y,0)) scale(1);transition:transform .14s ease-out}.sf-product-detail-image:hover>img{transform:translate(var(--pdp-image-x,0),var(--pdp-image-y,0)) scale(1.04)}}
 @media (max-width:700px){.sf-pdp-brand-values{grid-template-columns:1fr 1fr}.sf-pdp-brand-values article:nth-child(even){border-right:0}}
 @media (prefers-reduced-motion:reduce){.sf-pdp-more h2 path{animation:none;stroke-dashoffset:0}.sf-product-detail-image>img{transition:none!important}}

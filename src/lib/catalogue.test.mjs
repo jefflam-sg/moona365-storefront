@@ -56,7 +56,7 @@ test("validates bounded public catalogue responses and rejects private fields", 
   const detailResponse = structuredClone(commerceResponse);
   Object.assign(detailResponse.products[0], {
     longDescription: "A longer product description.",
-    specifications: [{ code: "country-of-origin", label: "Country of Origin", displayValue: "Peru", values: [], table: null }],
+    specifications: [{ code: "country-of-origin", label: "Country of Origin", icon: "globe", displayValue: "Peru", values: [], table: null }],
   });
   assert.equal(isProductsResponse(detailResponse, host), true);
   assert.equal(isProductsResponse({ ...productResponse, orgId: "private" }, host), false);

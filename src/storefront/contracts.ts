@@ -83,6 +83,7 @@ export type SectionType =
   | "product-showcase"
   | "stats"
   | "services"
+  | "product-page-brand-values"
   | "articles"
   | "newsletter"
   | "category-cards"
@@ -95,7 +96,14 @@ export type StorefrontIconName =
   | "heart"
   | "box"
   | "gift"
-  | "truck";
+  | "truck"
+  | "info"
+  | "globe"
+  | "nutrition"
+  | "storage"
+  | "package"
+  | "ruler"
+  | "shield";
 
 export type SectionItem = {
   id: string;
@@ -188,6 +196,7 @@ export type PublicProduct = {
   specifications?: Array<{
     code: string;
     label: string;
+    icon: StorefrontIconName | null;
     displayValue: string;
     values: string[];
     table: {

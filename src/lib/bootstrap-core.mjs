@@ -20,6 +20,7 @@ const registeredBlocks = new Set([
   "product-showcase",
   "stats",
   "services",
+  "product-page-brand-values",
   "articles",
   "newsletter",
   "category-cards",

@@ -21,8 +21,10 @@ const validVariant = (variant) => {
       (exact(variant.compareAtPrice, ["amount", "currency"]) && text(variant.compareAtPrice.amount) && text(variant.compareAtPrice.currency))) &&
     ["AVAILABLE", "SOLD_OUT", "UNAVAILABLE"].includes(variant.availability) && typeof variant.purchasable === "boolean";
 };
-const validSpecification = (item) => exact(item, ["code", "label", "displayValue", "values", "table"]) &&
+const specificationIcons = new Set(["info", "globe", "leaf", "nutrition", "storage", "package", "ruler", "shield"]);
+const validSpecification = (item) => exact(item, ["code", "label", "icon", "displayValue", "values", "table"]) &&
   [item.code, item.label, item.displayValue].every(text) &&
+  (item.icon === null || specificationIcons.has(item.icon)) &&
   Array.isArray(item.values) && item.values.every(text) &&
   (item.table === null || (exact(item.table, ["caption", "rows"]) && text(item.table.caption) &&
     Array.isArray(item.table.rows) && item.table.rows.every((row) =>

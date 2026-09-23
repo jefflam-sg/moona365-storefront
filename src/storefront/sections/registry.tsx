@@ -7,6 +7,7 @@ import { CategoriesSection, ProductShowcaseSection } from "./catalogue-sections"
 
 export type SectionRendererProps = { section: HomepageSection; preview: boolean; catalogue: HomepageCatalogue };
 type VersionedRenderer = { version: 1; component: ComponentType<SectionRendererProps> };
+const ProductPageOnlySection = () => null;
 
 const sectionRegistry: Partial<Record<SectionType, VersionedRenderer>> = {
   hero: { version: 1, component: HeroSection },
@@ -15,6 +16,7 @@ const sectionRegistry: Partial<Record<SectionType, VersionedRenderer>> = {
   "product-showcase": { version: 1, component: ProductShowcaseSection },
   stats: { version: 1, component: StatsSection },
   services: { version: 1, component: ServicesSection },
+  "product-page-brand-values": { version: 1, component: ProductPageOnlySection },
   "services-showcase-grouped": { version: 1, component: GroupedServicesSection },
 };
 

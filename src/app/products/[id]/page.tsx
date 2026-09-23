@@ -23,7 +23,8 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
     related = await loadStorefrontProducts(result.resolvedHost, { source: "newest", limit: 8 });
     recommendations = (related ?? []).filter((entry) => entry.id !== product.id).slice(0, 5);
   }
-  const visibleServices = result.snapshot.homepage.sections.filter((section) => section.visible && section.type === "services");
-  const brandValues = visibleServices.find((section) => section.layout === "compact") ?? visibleServices[0];
+  const brandValues = result.snapshot.homepage.sections.find((section) => section.visible && section.type === "product-page-brand-values")
+    ?? result.snapshot.homepage.sections.find((section) => section.visible && section.type === "services" && section.layout === "compact")
+    ?? result.snapshot.homepage.sections.find((section) => section.visible && section.type === "services");
   return <StorefrontPageShell snapshot={result.snapshot} catalogue={catalogue ?? undefined}><ProductDetail product={product} recommendations={recommendations} brandValues={brandValues} /></StorefrontPageShell>;
 }
