@@ -77,11 +77,33 @@ export function ProductDetail({ product, recommendations = [], frequentlyBoughtT
     if (images.length < 2) return;
     setActiveImage(images[(activeIndex + direction + images.length) % images.length].src);
   };
+  const share = async (destination: "native" | "whatsapp" | "facebook" | "email" | "pinterest") => {
+    const url = window.location.href;
+    const title = product.name;
+    if (destination === "native") {
+      try {
+        if (navigator.share) await navigator.share({ title, url });
+        else {
+          await navigator.clipboard.writeText(url);
+          setNotice("Product link copied.");
+        }
+      } catch { /* The customer may cancel the native share sheet. */ }
+      return;
+    }
+    const targets = {
+      whatsapp: `https://wa.me/?text=${encodeURIComponent(`${title} ${url}`)}`,
+      facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`,
+      email: `mailto:?subject=${encodeURIComponent(title)}&body=${encodeURIComponent(url)}`,
+      pinterest: `https://www.pinterest.com/pin/create/button/?url=${encodeURIComponent(url)}&description=${encodeURIComponent(title)}`,
+    };
+    if (destination === "email") window.location.href = targets.email;
+    else window.open(targets[destination], "_blank", "noopener,noreferrer");
+  };
 
   return <>
     <nav className="sf-breadcrumbs sf-pdp-breadcrumbs" aria-label="Breadcrumb"><Link href="/">Home</Link><span>›<Link href="/shop">Shop</Link></span><span>›<b>{product.name}</b></span></nav>
     <article className="sf-product-detail">
-      <section className="sf-pdp-gallery" aria-label={`${product.name} images`}>
+      <section className="sf-pdp-gallery" data-has-thumbnails={images.length > 1} aria-label={`${product.name} images`}>
         {images.length > 1 && <div className="sf-pdp-thumbnails">{images.map((image, index) => <button type="button" key={image.src} className={index === activeIndex ? "is-active" : ""} aria-label={`View image ${index + 1}`} aria-pressed={index === activeIndex} onClick={() => setActiveImage(image.src)}><img src={image.src} alt="" /></button>)}</div>}
         <div className="sf-product-detail-image">{active ? <img src={active.src} alt={active.alt || product.name} /> : <div className="sf-catalogue-placeholder" aria-hidden="true" />}{product.isNew && <span className="sf-pdp-badge">NEW</span>}{images.length > 1 && <><button type="button" className="sf-pdp-image-arrow sf-pdp-image-previous" aria-label="Previous image" onClick={() => moveImage(-1)}>‹</button><button type="button" className="sf-pdp-image-arrow sf-pdp-image-next" aria-label="Next image" onClick={() => moveImage(1)}>›</button></>} {active && <button type="button" className="sf-pdp-expand" aria-label="View image full screen" onClick={() => setFullScreen(true)}>⛶</button>}</div>
       </section>
@@ -95,9 +117,11 @@ export function ProductDetail({ product, recommendations = [], frequentlyBoughtT
         <p className="sf-pdp-stock" data-available={Boolean(selectedVariant?.purchasable)}>{selectedVariant ? (selectedVariant.purchasable ? "● In stock" : "Sold out") : `Select ${product.variantOptionName || "an option"} to see availability`}</p>
         <div className="sf-pdp-actions"><button type="button" onClick={add} disabled={Boolean(selectedVariant && !selectedVariant.purchasable)}>Add to Cart</button><button type="button" className="sf-pdp-wishlist" aria-pressed={wishlisted} onClick={() => setWishlisted(toggleWishlist(product.id))}>{wishlisted ? "♥ Saved to Wishlist" : "♡ Add to Wishlist"}</button></div>
         {notice && <p className="sf-pdp-notice" role="status">{notice}</p>}
+        {(product.specifications?.length ?? 0) > 0 && <section className="sf-pdp-more"><h2>More information</h2>{product.specifications?.map((specification) => <details key={specification.code}><summary>{specification.label}</summary><div className="sf-pdp-more-value">{specification.table ? <>{specification.table.caption && <p>{specification.table.caption}</p>}<table><tbody>{specification.table.rows.map((row) => <tr key={`${row.label}-${row.value}-${row.unit}`}><th scope="row">{row.label}</th><td>{row.value}{row.unit ? ` ${row.unit}` : ""}</td></tr>)}</tbody></table></> : specification.values.length ? <ul>{specification.values.map((value) => <li key={value}>{value}</li>)}</ul> : <p>{specification.displayValue}</p>}</div></details>)}</section>}
+        <section className="sf-pdp-share" aria-label="Share this product"><b>Share this product</b><div><button type="button" onClick={() => void share("native")} aria-label="Share or copy product link">↗</button><button type="button" onClick={() => void share("whatsapp")} aria-label="Share on WhatsApp">WA</button><button type="button" onClick={() => void share("facebook")} aria-label="Share on Facebook">f</button><button type="button" onClick={() => void share("email")} aria-label="Share by email">✉</button><button type="button" onClick={() => void share("pinterest")} aria-label="Share on Pinterest">P</button></div></section>
       </section>
     </article>
-    {product.shortDescription && <section className="sf-pdp-description"><h2>Description</h2><p>{product.shortDescription}</p></section>}
+    {(product.longDescription || product.shortDescription) && <section className="sf-pdp-description"><h2>Description</h2><p>{product.longDescription || product.shortDescription}</p></section>}
     {frequentlyBoughtTogether.length > 0 && <section className="sf-pdp-bundle"><header><h2>Frequently Bought Together</h2><p>Complete your purchase with these popular pairings.</p></header><div className="sf-pdp-bundle-products">{frequentlyBoughtTogether.map((item) => <ProductCard key={item.id} product={item} />)}</div></section>}
     {recommendations.length > 0 && <section className="sf-pdp-related sf-plp-results"><header><div><h2>You May Also Like</h2><p>More products you might enjoy.</p></div><Link href="/shop">View All</Link></header><div className="sf-product-grid sf-pdp-related-products">{recommendations.map((item) => <ProductCard key={item.id} product={item} />)}</div></section>}
     {fullScreen && active && <div className="sf-pdp-lightbox" role="dialog" aria-modal="true" aria-label={`${product.name} full-screen image`} onMouseDown={(event) => event.target === event.currentTarget && setFullScreen(false)}><button type="button" aria-label="Close full-screen image" onClick={() => setFullScreen(false)}>×</button><img src={active.src} alt={active.alt || product.name} /></div>}

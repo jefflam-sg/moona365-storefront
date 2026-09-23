@@ -184,6 +184,17 @@ export type PublicProduct = {
   slug: string;
   name: string;
   shortDescription: string;
+  longDescription?: string;
+  specifications?: Array<{
+    code: string;
+    label: string;
+    displayValue: string;
+    values: string[];
+    table: {
+      caption: string;
+      rows: Array<{ label: string; value: string; unit: string }>;
+    } | null;
+  }>;
   variantOptionName?: string | null;
   isNew?: boolean;
   primaryImage: BrandAsset | null;

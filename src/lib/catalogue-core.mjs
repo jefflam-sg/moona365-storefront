@@ -21,6 +21,12 @@ const validVariant = (variant) => {
       (exact(variant.compareAtPrice, ["amount", "currency"]) && text(variant.compareAtPrice.amount) && text(variant.compareAtPrice.currency))) &&
     ["AVAILABLE", "SOLD_OUT", "UNAVAILABLE"].includes(variant.availability) && typeof variant.purchasable === "boolean";
 };
+const validSpecification = (item) => exact(item, ["code", "label", "displayValue", "values", "table"]) &&
+  [item.code, item.label, item.displayValue].every(text) &&
+  Array.isArray(item.values) && item.values.every(text) &&
+  (item.table === null || (exact(item.table, ["caption", "rows"]) && text(item.table.caption) &&
+    Array.isArray(item.table.rows) && item.table.rows.every((row) =>
+      exact(row, ["label", "value", "unit"]) && [row.label, row.value, row.unit].every(text))));
 
 export function isCollectionsResponse(value, host) {
   return exact(value, ["apiVersion", "resolvedHost", "siteId", "calculatedAt", "collections"]) &&
@@ -49,8 +55,11 @@ export function isProductsResponse(value, host) {
     [value.pagination.page, value.pagination.pageSize, value.pagination.total, value.pagination.pageCount].every((item) => Number.isSafeInteger(item) && item >= 0) &&
     Array.isArray(value.products) && value.products.every((product) =>
       (exact(product, ["id", "slug", "name", "shortDescription", "primaryImage", "collectionIds", "variants"]) ||
-       exact(product, ["id", "slug", "name", "shortDescription", "variantOptionName", "isNew", "primaryImage", "collectionIds", "variants"])) &&
+       exact(product, ["id", "slug", "name", "shortDescription", "variantOptionName", "isNew", "primaryImage", "collectionIds", "variants"]) ||
+       exact(product, ["id", "slug", "name", "shortDescription", "longDescription", "specifications", "variantOptionName", "isNew", "primaryImage", "collectionIds", "variants"])) &&
       [product.id, product.slug, product.name, product.shortDescription].every(text) && validImage(product.primaryImage) &&
+      (!Object.hasOwn(product, "longDescription") || text(product.longDescription)) &&
+      (!Object.hasOwn(product, "specifications") || (Array.isArray(product.specifications) && product.specifications.every(validSpecification))) &&
       (!Object.hasOwn(product, "variantOptionName") || product.variantOptionName === null || text(product.variantOptionName)) &&
       (!Object.hasOwn(product, "isNew") || typeof product.isNew === "boolean") &&
       Array.isArray(product.collectionIds) && product.collectionIds.every(text) && Array.isArray(product.variants) &&
