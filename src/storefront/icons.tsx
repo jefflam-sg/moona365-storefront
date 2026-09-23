@@ -24,6 +24,10 @@ export function StorefrontIcon({ name }: { name: StorefrontIconName | "search" |
       {name === "heart-leaf" && <><path d="M12 20.5C4.5 15 2.2 10.8 4.3 7.1 6.1 4 9.5 4.7 12 7.4c2.5-2.7 5.9-3.4 7.7-.3 2.1 3.7-.2 7.9-7.7 13.4Z" /><path d="M13.5 12.8c2.1-2.5 4.5-2.8 6.4-2.4-.2 2.6-1.7 5.3-5.8 5.6M14.1 16c1-1.7 2.7-3.1 5.1-4.4" /></>}
       {name === "book-open" && <><path d="M3 5.2c3.7-.8 6.7 0 9 2.1v12c-2.3-2.1-5.3-2.9-9-2.1Z" /><path d="M21 5.2c-3.7-.8-6.7 0-9 2.1v12c2.3-2.1 5.3-2.9 9-2.1Z" /></>}
       {name === "ingredient-bowl" && <><path d="M4 11h16c-.5 5.2-3.2 8-8 8s-7.5-2.8-8-8Z" /><path d="M6 15h12M16.5 3 11 11M15.2 4.8l2.5 1.7" /></>}
+      {name === "megaphone" && <><path d="M3 11v3l4 1 9 5V5L7 10H4a1 1 0 0 0-1 1Z" /><path d="m7 15 1 5h3l-1-4M19 8c2 2 2 6 0 8" /></>}
+      {name === "tag" && <><path d="m3 12 9-9h7l2 2v7l-9 9-9-9Z" /><path d="M16 7h.01" /></>}
+      {name === "mail" && <><path d="M3 6h18v13H3V6Z" /><path d="m3 7 9 7 9-7" /></>}
+      {name === "whatsapp" && <><path d="M12 3a9 9 0 0 0-7.7 13.7L3 21l4.4-1.2A9 9 0 1 0 12 3Z" /><path d="M9 8c.4 4 3 6.3 7 7" /></>}
     </svg>
   );
 }

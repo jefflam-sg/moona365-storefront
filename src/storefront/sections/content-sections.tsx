@@ -5,6 +5,7 @@ import type { HomepageSection } from "../contracts";
 import { StorefrontIcon } from "../icons";
 import { safeDestination, safeImageSource } from "../safe-values";
 import { SectionAction } from "./section-action";
+import { NewsletterSignup } from "../newsletter-signup";
 
 function SectionHeading({ section }: { section: HomepageSection }) {
   return (
@@ -57,6 +58,14 @@ export function ServicesSection({ section, preview }: { section: HomepageSection
 export function BrandValuesSection({ section }: { section: HomepageSection; preview: boolean }) {
   if (!section.items.length) return null;
   return <section className="sf-pdp-brand-values sf-width" data-section-id={section.id} aria-label={section.heading || "Our values"}>{section.items.map((item) => <article key={item.id}><StorefrontIcon name={item.icon} /><span><strong>{item.title}</strong>{item.description && <small>{item.description}</small>}</span></article>)}</section>;
+}
+
+export function NewsletterSection({ section, preview }: { section: HomepageSection; preview: boolean }) {
+  const imageSource = section.image ? safeImageSource(section.image.src) : null;
+  return <section className="sf-section sf-width sf-newsletter-section" data-section-id={section.id}>
+    <div className="sf-newsletter-intro">{section.image && imageSource && <img src={imageSource} alt={section.image.alt} loading="lazy" />}<div><h2>{section.heading}</h2>{section.description && <p>{section.description}</p>}</div></div>
+    <NewsletterSignup buttonLabel={section.cta.text || "Subscribe"} interests={section.items.map((item) => ({ id: item.id, label: item.title, icon: item.icon }))} preview={preview} />
+  </section>;
 }
 
 export function GroupedServicesSection({ section, preview }: { section: HomepageSection; preview: boolean }) {

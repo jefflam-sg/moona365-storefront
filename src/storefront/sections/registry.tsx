@@ -1,7 +1,7 @@
 import type { ComponentType } from "react";
 import type { HomepageCatalogue, HomepageSection, SectionType } from "../contracts";
 import { HeroSection } from "./hero";
-import { BrandValuesSection, GroupedServicesSection, ServicesSection, StatsSection } from "./content-sections";
+import { BrandValuesSection, GroupedServicesSection, NewsletterSection, ServicesSection, StatsSection } from "./content-sections";
 import { FeaturedCollectionSection } from "./featured-collection";
 import { CategoriesSection, ProductShowcaseSection } from "./catalogue-sections";
 
@@ -17,6 +17,7 @@ const sectionRegistry: Partial<Record<SectionType, VersionedRenderer>> = {
   stats: { version: 1, component: StatsSection },
   services: { version: 1, component: ServicesSection },
   "brand-values": { version: 1, component: BrandValuesSection },
+  newsletter: { version: 1, component: NewsletterSection },
   "product-page-brand-values": { version: 1, component: ProductPageOnlySection },
   "services-showcase-grouped": { version: 1, component: GroupedServicesSection },
 };

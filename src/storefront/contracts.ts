@@ -74,7 +74,6 @@ export type WebsiteDesign = {
     navigation: "policies";
     showNewsletter: false;
     blocks?: Array<
-      | { id: string; type: "newsletter"; width: 1 | 2; heading: string; description: string; buttonLabel: string; interests: string[] }
       | { id: string; type: "media"; width: 1 | 2; heading: string; image: BrandAsset | null; href: string }
       | { id: string; type: "links"; width: 1 | 2; heading: string; links: Array<{ id: string; label: string; href: string }> }
     >;
@@ -112,7 +111,11 @@ export type StorefrontIconName =
   | "shield"
   | "heart-leaf"
   | "book-open"
-  | "ingredient-bowl";
+  | "ingredient-bowl"
+  | "megaphone"
+  | "tag"
+  | "mail"
+  | "whatsapp";
 
 export type SectionItem = {
   id: string;
