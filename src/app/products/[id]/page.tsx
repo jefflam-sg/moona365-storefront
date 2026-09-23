@@ -23,5 +23,7 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
     related = await loadStorefrontProducts(result.resolvedHost, { source: "newest", limit: 8 });
     recommendations = (related ?? []).filter((entry) => entry.id !== product.id).slice(0, 5);
   }
-  return <StorefrontPageShell snapshot={result.snapshot} catalogue={catalogue ?? undefined}><ProductDetail product={product} recommendations={recommendations} /></StorefrontPageShell>;
+  const visibleServices = result.snapshot.homepage.sections.filter((section) => section.visible && section.type === "services");
+  const brandValues = visibleServices.find((section) => section.layout === "compact") ?? visibleServices[0];
+  return <StorefrontPageShell snapshot={result.snapshot} catalogue={catalogue ?? undefined}><ProductDetail product={product} recommendations={recommendations} brandValues={brandValues} /></StorefrontPageShell>;
 }

@@ -277,3 +277,27 @@ button, input { font: inherit; }
 @media (prefers-reduced-motion: reduce) { .sf-primary-button, .sf-secondary-button, .sf-service-card, .sf-grouped-card { transition: none; } }
 
 .sf-pdp-more{margin-top:34px;border-top:1px solid var(--retail-border)}.sf-pdp-more h2{margin:0;padding:18px 0 10px;font:700 1.35em/1.2 var(--retail-heading-font)}.sf-pdp-more details{border-top:1px solid color-mix(in srgb,var(--retail-border) 72%,transparent)}.sf-pdp-more summary{position:relative;padding:14px 34px 14px 0;cursor:pointer;font-weight:650;list-style:none}.sf-pdp-more summary::-webkit-details-marker{display:none}.sf-pdp-more summary::after{position:absolute;right:8px;content:'+'}.sf-pdp-more details[open] summary::after{content:'−'}.sf-pdp-more-value{padding:0 0 16px;color:var(--retail-textMuted);line-height:1.65}.sf-pdp-more-value p{margin:0;white-space:pre-line}.sf-pdp-more-value ul{margin:0;padding-left:20px}.sf-pdp-more-value table{width:100%;border-collapse:collapse}.sf-pdp-more-value th,.sf-pdp-more-value td{padding:7px 0;border-bottom:1px solid var(--retail-border);text-align:left}.sf-pdp-more-value td{text-align:right}.sf-pdp-share{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-top:22px;padding-top:18px;border-top:1px solid var(--retail-border)}.sf-pdp-share>div{display:flex;gap:8px}.sf-pdp-share button{display:grid;width:36px;height:36px;place-items:center;color:var(--retail-primary);background:var(--retail-surface);border:1px solid var(--retail-primary);border-radius:50%;font-weight:750;cursor:pointer}.sf-pdp-share button:hover,.sf-pdp-share button:focus-visible{color:var(--retail-onPrimary);background:var(--retail-primary)}.sf-pdp-description p{white-space:pre-line}
+
+/* Product detail refinements */
+.sf-pdp-summary h1{font-family:'Open Sans',sans-serif;font-weight:400;letter-spacing:0}
+.sf-pdp-more{border-top:0}
+.sf-pdp-more h2{padding-top:0}
+.sf-pdp-more h2>span{display:block}
+.sf-pdp-more h2>svg{display:block;width:min(190px,55%);height:13px;margin-top:3px;overflow:visible}
+.sf-pdp-more h2 path{fill:none;stroke:var(--retail-primary);stroke-width:1.7;stroke-linecap:round;stroke-dasharray:240;stroke-dashoffset:240;animation:sf-pdp-heading-stroke .85s ease-out forwards}
+.sf-pdp-more h2 path+path{stroke-width:1;opacity:.65;animation-delay:.18s}
+@keyframes sf-pdp-heading-stroke{to{stroke-dashoffset:0}}
+.sf-pdp-share button{color:#111;background:var(--retail-surface);border-color:color-mix(in srgb,#111 48%,var(--retail-border))}
+.sf-pdp-share button:hover,.sf-pdp-share button:focus-visible{color:var(--retail-primary);background:var(--retail-surface);border-color:var(--retail-primary)}
+.sf-pdp-share svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.sf-pdp-share .sf-share-icon-facebook{fill:currentColor;stroke:none}
+.sf-pdp-brand-values{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));margin-top:clamp(56px,7vw,90px);padding:24px 20px;background:color-mix(in srgb,var(--retail-secondary) 45%,var(--retail-surface));border-block:1px solid color-mix(in srgb,var(--retail-border) 75%,transparent)}
+.sf-pdp-brand-values article{display:flex;min-width:0;align-items:center;justify-content:center;gap:13px;padding:10px 18px;border-right:1px solid color-mix(in srgb,var(--retail-border) 70%,transparent)}
+.sf-pdp-brand-values article:last-child{border-right:0}
+.sf-pdp-brand-values svg{width:38px;height:38px;flex:0 0 auto;color:var(--retail-primary)}
+.sf-pdp-brand-values span{display:grid;gap:2px}
+.sf-pdp-brand-values strong{font-weight:600}
+.sf-pdp-brand-values small{color:var(--retail-textMuted);line-height:1.35}
+@media (hover:hover) and (pointer:fine){.sf-product-detail-image>img{transform:translate(var(--pdp-image-x,0),var(--pdp-image-y,0)) scale(1);transition:transform .14s ease-out}.sf-product-detail-image:hover>img{transform:translate(var(--pdp-image-x,0),var(--pdp-image-y,0)) scale(1.04)}}
+@media (max-width:700px){.sf-pdp-brand-values{grid-template-columns:1fr 1fr}.sf-pdp-brand-values article:nth-child(even){border-right:0}}
+@media (prefers-reduced-motion:reduce){.sf-pdp-more h2 path{animation:none;stroke-dashoffset:0}.sf-product-detail-image>img{transition:none!important}}
