@@ -32,7 +32,7 @@ export function ContentColumnsSection({ section, preview }: { section: HomepageS
       const destination = safeDestination(column.cta.href);
       return <article className={`sf-content-column${mediaOnly ? " sf-content-column--media-only" : ""}`} key={column.id}>
         {column.media?.placement === "top" && media(column)}
-        {!mediaOnly && <div className="sf-content-column-copy">{column.subject && <><h3>{column.subject}</h3><i data-width={column.lineWidth} aria-hidden="true" /></>}{column.body && <p>{column.body}</p>}{column.cta.text && (destination && !preview ? <Link className="sf-primary-button" href={destination}>{column.cta.text}</Link> : <button type="button" className="sf-primary-button" disabled={preview}>{column.cta.text}</button>)}</div>}
+        {!mediaOnly && <div className="sf-content-column-copy" data-position={column.contentPosition ?? "top-left"}>{column.subject && <><h3>{column.subject}</h3><i data-width={column.lineWidth} aria-hidden="true" /></>}{column.body && <p>{column.body}</p>}{column.cta.text && (destination && !preview ? <Link className="sf-primary-button" href={destination}>{column.cta.text}</Link> : <button type="button" className="sf-primary-button" disabled={preview}>{column.cta.text}</button>)}</div>}
         {column.media?.placement === "bottom" && media(column)}
       </article>;
     })}

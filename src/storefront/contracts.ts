@@ -141,7 +141,8 @@ export type ServiceGroup = {
 };
 
 export type ContentColumnMedia = { type: "image" | "video" | "youtube"; src: string; alt: string; videoId: string; title: string; placement: "top" | "bottom"; fit: "cover" | "contain" };
-export type ContentColumn = { id: string; subject: string; lineWidth: "quarter" | "half" | "full"; body: string; cta: { text: string; href: string }; media: ContentColumnMedia | null };
+export type ContentColumnPosition = "top-left" | "top-center" | "top-right" | "center-left" | "center" | "center-right" | "bottom-left" | "bottom-center" | "bottom-right";
+export type ContentColumn = { id: string; subject: string; lineWidth: "quarter" | "half" | "full"; body: string; cta: { text: string; href: string }; media: ContentColumnMedia | null; contentPosition?: ContentColumnPosition };
 
 export type HomepageSection = {
   id: string;
