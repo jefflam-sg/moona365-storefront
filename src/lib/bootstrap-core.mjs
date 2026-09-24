@@ -28,6 +28,7 @@ const registeredBlocks = new Set([
   "newsletter",
   "category-cards",
   "services-showcase-grouped",
+  "content-columns",
 ]);
 
 const isRecord = (value) =>

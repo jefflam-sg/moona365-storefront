@@ -76,6 +76,14 @@ test("rejects a response for another tenant and any private extra field", () => 
   );
 });
 
+test("accepts published Content Columns sections", () => {
+  const response = responseFor("alpha.example.com", "site-a");
+  response.snapshot.homepage.sections = [
+    { id: "story", type: "content-columns", version: 1, visible: true },
+  ];
+  assert.equal(isPublicBootstrap(response, "alpha.example.com"), true);
+});
+
 test("returns no tenant for backend 404 without inventing a fallback", async () => {
   const result = await resolvePublishedStorefront("unknown.example.com", {
     baseUrl: "https://api.example.com",
