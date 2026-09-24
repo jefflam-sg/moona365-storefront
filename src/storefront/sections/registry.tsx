@@ -4,6 +4,7 @@ import { HeroSection } from "./hero";
 import { BrandValuesSection, GroupedServicesSection, NewsletterSection, ServicesSection, StatsSection } from "./content-sections";
 import { FeaturedCollectionSection } from "./featured-collection";
 import { CategoriesSection, ProductShowcaseSection } from "./catalogue-sections";
+import { ContentColumnsSection } from "./content-columns";
 
 export type SectionRendererProps = { section: HomepageSection; preview: boolean; catalogue: HomepageCatalogue };
 type VersionedRenderer = { version: 1; component: ComponentType<SectionRendererProps> };
@@ -20,6 +21,7 @@ const sectionRegistry: Partial<Record<SectionType, VersionedRenderer>> = {
   newsletter: { version: 1, component: NewsletterSection },
   "product-page-brand-values": { version: 1, component: ProductPageOnlySection },
   "services-showcase-grouped": { version: 1, component: GroupedServicesSection },
+  "content-columns": { version: 1, component: ContentColumnsSection },
 };
 
 export const implementedSectionTypes = Object.freeze(

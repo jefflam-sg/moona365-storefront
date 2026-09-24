@@ -92,7 +92,8 @@ export type SectionType =
   | "articles"
   | "newsletter"
   | "category-cards"
-  | "services-showcase-grouped";
+  | "services-showcase-grouped"
+  | "content-columns";
 
 export type StorefrontIconName =
   | "leaf"
@@ -139,6 +140,9 @@ export type ServiceGroup = {
   }>;
 };
 
+export type ContentColumnMedia = { type: "image" | "video" | "youtube"; src: string; alt: string; videoId: string; title: string; placement: "top" | "bottom"; fit: "cover" | "contain" };
+export type ContentColumn = { id: string; subject: string; lineWidth: "quarter" | "half" | "full"; body: string; cta: { text: string; href: string }; media: ContentColumnMedia | null };
+
 export type HomepageSection = {
   id: string;
   type: SectionType;
@@ -161,6 +165,7 @@ export type HomepageSection = {
   items: SectionItem[];
   groups?: ServiceGroup[];
   colors?: { background: string; panel: string; card: string; accent: string; text: string; mutedText: string };
+  columns?: ContentColumn[];
 };
 
 export type StorefrontSnapshot = {
