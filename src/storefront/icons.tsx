@@ -11,9 +11,9 @@ export function StorefrontIcon({ name }: { name: StorefrontIconName | "search" |
       {name === "people" && <><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M17 4a4 4 0 0 1 0 8M22 21v-2a4 4 0 0 0-3-4" /></>}
       {name === "tree" && <path d="M12 2 5 9h3l-5 7h7v6h4v-6h7l-5-7h3Z" />}
       {name === "heart" && <path d="M20 5c-3-3-6-1-8 1-2-2-5-4-8-1-4 4 0 9 8 16 8-7 12-12 8-16Z" />}
-      {name === "box" && <><path d="M3 4h18v5H3M5 9h14v12H5" /><path d="M9 13h6" /></>}
-      {name === "gift" && <><path d="M3 8h18v5H3M5 13h14v8H5M12 8v13" /><path d="M12 8C3 8 5 1 9 3c2 1 3 5 3 5Zm0 0c9 0 7-7 3-5-2 1-3 5-3 5" /></>}
-      {name === "truck" && <><path d="M2 5h12v12H2M14 9h4l4 5v3h-8" /><circle cx="5" cy="18" r="2" /><circle cx="18" cy="18" r="2" /></>}
+      {name === "box" && <><path d="M3 4h18v5H3ZM5 9h14v12H5Z" /><path d="M9 13h6" /></>}
+      {name === "gift" && <><path d="M3 8h18v5H3ZM5 13h14v8H5ZM12 8v13" /><path d="M12 8C3 8 5 1 9 3c2 1 3 5 3 5Zm0 0c9 0 7-7 3-5-2 1-3 5-3 5" /></>}
+      {name === "truck" && <><path d="M2 5h12v12H2ZM14 9h4l4 5v3h-8Z" /><circle cx="5" cy="18" r="2" /><circle cx="18" cy="18" r="2" /></>}
       {name === "info" && <><circle cx="12" cy="12" r="9" /><path d="M12 11v6M12 7h.01" /></>}
       {name === "globe" && <><circle cx="12" cy="12" r="9" /><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18" /></>}
       {name === "nutrition" && <><path d="M5 20V11M10 20V7M15 20V4M20 20V9" /><path d="M3 20h19" /></>}
