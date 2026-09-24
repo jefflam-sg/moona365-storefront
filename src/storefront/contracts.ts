@@ -69,7 +69,7 @@ export type WebsiteDesign = {
     showLogo: boolean;
     showAddress: boolean;
     showContact: boolean;
-    columns: 2 | 3 | 4;
+    columns: 2 | 3 | 4 | 5;
     copyright: string;
     navigation: "policies";
     showNewsletter: false;
