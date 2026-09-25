@@ -84,6 +84,15 @@ test("accepts published Content Columns sections", () => {
   assert.equal(isPublicBootstrap(response, "alpha.example.com"), true);
 });
 
+test("accepts bounded custom pages and rejects duplicate page slugs", () => {
+  const response = responseFor("alpha.example.com", "site-a");
+  const page = { id: "about", title: "About us", slug: "about-us", status: "ACTIVE", seo: { title: "", description: "", image: null }, schemaVersion: 1, sections: [{ id: "story", type: "content-columns", version: 1, visible: true }] };
+  response.snapshot.pages = { product: { schemaVersion: 1, sections: [] }, custom: [page] };
+  assert.equal(isPublicBootstrap(response, "alpha.example.com"), true);
+  response.snapshot.pages.custom.push({ ...page, id: "copy" });
+  assert.equal(isPublicBootstrap(response, "alpha.example.com"), false);
+});
+
 test("returns no tenant for backend 404 without inventing a fallback", async () => {
   const result = await resolvePublishedStorefront("unknown.example.com", {
     baseUrl: "https://api.example.com",

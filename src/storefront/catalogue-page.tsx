@@ -13,7 +13,7 @@ export { ProductCard } from "./product-card";
 /* eslint-disable @next/next/no-img-element */
 
 export function StorefrontPageShell({ snapshot, children, catalogue }: { snapshot: StorefrontSnapshot; children: ReactNode; catalogue?: HomepageCatalogue }) {
-  return <div className="sf-site" style={themeVariables(snapshot.design)}><StorefrontHeader design={snapshot.design} preview={false} navigation={snapshot.navigation} catalogue={catalogue} /><main className="sf-catalogue-page sf-width">{children}</main><StorefrontFooter design={snapshot.design} navigation={snapshot.navigation} catalogue={catalogue} /></div>;
+  return <div className="sf-site" style={themeVariables(snapshot.design)}><StorefrontHeader design={snapshot.design} preview={false} navigation={snapshot.navigation} pages={snapshot.pages?.custom} catalogue={catalogue} /><main className="sf-catalogue-page sf-width">{children}</main><StorefrontFooter design={snapshot.design} navigation={snapshot.navigation} pages={snapshot.pages?.custom} catalogue={catalogue} /></div>;
 }
 
 export function MaintenancePage({ snapshot }: { snapshot: StorefrontSnapshot }) {

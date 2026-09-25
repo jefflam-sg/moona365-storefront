@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import type { HomepageCatalogue, WebsiteDesign, WebsiteNavigation } from "./contracts";
+import type { HomepageCatalogue, WebsiteCustomPage, WebsiteDesign, WebsiteNavigation } from "./contracts";
 import { StorefrontIcon } from "./icons";
 import { resolveNavigation, type ResolvedNavigationNode } from "./navigation";
 import { safeImageSource } from "./safe-values";
@@ -32,9 +32,9 @@ function MenuIcon() {
   return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" /></svg>;
 }
 
-export function StorefrontHeader({ design, preview, navigation, catalogue = { categories: [], collections: [], productsBySectionId: {} } }: { design: WebsiteDesign; preview: boolean; navigation?: WebsiteNavigation; catalogue?: HomepageCatalogue }) {
+export function StorefrontHeader({ design, preview, navigation, pages = [], catalogue = { categories: [], collections: [], productsBySectionId: {} } }: { design: WebsiteDesign; preview: boolean; navigation?: WebsiteNavigation; pages?: WebsiteCustomPage[]; catalogue?: HomepageCatalogue }) {
   const { header } = design;
-  const items = resolveNavigation("main", navigation, catalogue);
+  const items = resolveNavigation("main", navigation, catalogue, pages);
   const pathname = usePathname();
   const [open, setOpen] = useState<string | null>(null);
   const [mobile, setMobile] = useState(false);

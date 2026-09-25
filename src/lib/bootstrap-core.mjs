@@ -80,7 +80,7 @@ function isSnapshotEnvelope(value) {
     value.homepage.schemaVersion !== 1 ||
     !Array.isArray(value.homepage.sections) ||
     value.homepage.sections.length > 20 ||
-    (value.pages !== undefined && (!isRecord(value.pages) || !hasExactKeys(value.pages, ["product"]) || !isRecord(value.pages.product) || !hasExactKeys(value.pages.product, ["schemaVersion", "sections"]) || value.pages.product.schemaVersion !== 1 || !Array.isArray(value.pages.product.sections) || value.pages.product.sections.length > 20))
+    (value.pages !== undefined && (!isRecord(value.pages) || !(["product"].every((key) => Object.hasOwn(value.pages, key)) && Object.keys(value.pages).every((key) => ["product", "custom"].includes(key))) || !isRecord(value.pages.product) || !hasExactKeys(value.pages.product, ["schemaVersion", "sections"]) || value.pages.product.schemaVersion !== 1 || !Array.isArray(value.pages.product.sections) || value.pages.product.sections.length > 20 || (value.pages.custom !== undefined && (!Array.isArray(value.pages.custom) || value.pages.custom.length > 30))))
   )
     return false;
 
@@ -102,7 +102,16 @@ function isSnapshotEnvelope(value) {
     return true;
     });
   };
-  return validSections(value.homepage.sections) && (value.pages === undefined || validSections(value.pages.product.sections));
+  const customPages = value.pages?.custom ?? [];
+  const pageIds = new Set();
+  const pageSlugs = new Set();
+  const validPages = customPages.every((page) => {
+    if (!isRecord(page) || !hasExactKeys(page, ["id", "title", "slug", "status", "seo", "schemaVersion", "sections"]) || typeof page.id !== "string" || !page.id || page.id.length > 80 || pageIds.has(page.id) || typeof page.title !== "string" || !page.title.trim() || page.title.length > 120 || typeof page.slug !== "string" || page.slug.length > 120 || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(page.slug) || pageSlugs.has(page.slug) || !["ACTIVE", "ARCHIVED"].includes(page.status) || page.schemaVersion !== 1 || !Array.isArray(page.sections) || page.sections.length > 20 || !validSections(page.sections) || !isRecord(page.seo) || !hasExactKeys(page.seo, ["title", "description", "image"]) || typeof page.seo.title !== "string" || page.seo.title.length > 70 || typeof page.seo.description !== "string" || page.seo.description.length > 320) return false;
+    const image = page.seo.image;
+    if (image !== null && (!isRecord(image) || !hasExactKeys(image, ["src", "alt"]) || typeof image.src !== "string" || !image.src || image.src.length > 750000 || typeof image.alt !== "string" || image.alt.length > 120)) return false;
+    pageIds.add(page.id); pageSlugs.add(page.slug); return true;
+  });
+  return validSections(value.homepage.sections) && (value.pages === undefined || validSections(value.pages.product.sections) && validPages);
 }
 
 export function isPublicBootstrap(value, requestedHost) {

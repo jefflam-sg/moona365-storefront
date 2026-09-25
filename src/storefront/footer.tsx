@@ -1,4 +1,4 @@
-import type { HomepageCatalogue, WebsiteDesign, WebsiteNavigation } from "./contracts";
+import type { HomepageCatalogue, WebsiteCustomPage, WebsiteDesign, WebsiteNavigation } from "./contracts";
 import { StorefrontBrand } from "./header";
 import Link from "next/link";
 import { resolveNavigation } from "./navigation";
@@ -8,9 +8,9 @@ import type { CSSProperties } from "react";
 /* Tenant-managed footer media is validated at the published snapshot boundary. */
 /* eslint-disable @next/next/no-img-element */
 
-export function StorefrontFooter({ design, preview = false, navigation, catalogue = { categories: [], collections: [], productsBySectionId: {} } }: { design: WebsiteDesign; preview?: boolean; navigation?: WebsiteNavigation; catalogue?: HomepageCatalogue }) {
+export function StorefrontFooter({ design, preview = false, navigation, pages = [], catalogue = { categories: [], collections: [], productsBySectionId: {} } }: { design: WebsiteDesign; preview?: boolean; navigation?: WebsiteNavigation; pages?: WebsiteCustomPage[]; catalogue?: HomepageCatalogue }) {
   const { footer, brand } = design;
-  const items = resolveNavigation("footer", navigation, catalogue);
+  const items = resolveNavigation("footer", navigation, catalogue, pages);
   const blocks = footer.blocks ?? [];
   return (
     <footer className="sf-footer">

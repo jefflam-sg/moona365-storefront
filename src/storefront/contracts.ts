@@ -169,12 +169,14 @@ export type HomepageSection = {
   columns?: ContentColumn[];
 };
 
+export type WebsiteCustomPage = { id: string; title: string; slug: string; status: "ACTIVE" | "ARCHIVED"; seo: { title: string; description: string; image: BrandAsset | null }; schemaVersion: 1; sections: HomepageSection[] };
+
 export type StorefrontSnapshot = {
   contractVersion: 1;
   theme: { code: "retail-natural"; version: 1 };
   design: WebsiteDesign;
   homepage: { schemaVersion: 1; sections: HomepageSection[] };
-  pages?: { product: { schemaVersion: 1; sections: HomepageSection[] } };
+  pages?: { product: { schemaVersion: 1; sections: HomepageSection[] }; custom?: WebsiteCustomPage[] };
   navigation?: WebsiteNavigation;
 };
 
@@ -184,6 +186,7 @@ export type NavigationDestination =
   | { type: "PRODUCT_CATEGORY"; categoryId: string; includeSubcategories: boolean }
   | { type: "WEBSITE_COLLECTION"; collectionId: string }
   | { type: "PRODUCT"; productId: string }
+  | { type: "CUSTOM_PAGE"; pageId: string }
   | { type: "SYSTEM_PAGE"; page: "HOME" | "SHOP" | "CATEGORIES" | "COLLECTIONS" }
   | { type: "CUSTOM_URL"; url: string };
 export type NavigationNode = { id: string; parentId: string | null; position: number; visible: boolean; labelOverride: string | null; destination: NavigationDestination; presentation: "LINK" | "DROPDOWN" | "MEGA_MENU"; automaticChildren: null | { scope: "CHILDREN_OF_CATEGORY" | "ALL_TOP_LEVEL"; maxDepth: 1 | 2 }; megaMenu: null | { columns: 3 | 4 | 5; promo: null | { heading: string; text: string; image: BrandAsset | null; destination: NavigationDestination } } };

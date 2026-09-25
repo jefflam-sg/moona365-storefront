@@ -12,17 +12,17 @@ export function StorefrontRenderer({ snapshot, preview = false, catalogue = { ca
         Draft preview · commerce disabled
         {unsupported.length > 0 && ` · ${unsupported.length} section${unsupported.length === 1 ? "" : "s"} awaiting renderer migration`}
       </div>}
-      <StorefrontHeader design={snapshot.design} preview={preview} navigation={snapshot.navigation} catalogue={catalogue} />
+      <StorefrontHeader design={snapshot.design} preview={preview} navigation={snapshot.navigation} pages={snapshot.pages?.custom} catalogue={catalogue} />
       <main>
         {snapshot.homepage.sections
           .filter((section) => section.visible)
           .map((section) => renderHomepageSection(section, preview, catalogue))}
       </main>
-      <StorefrontFooter design={snapshot.design} preview={preview} navigation={snapshot.navigation} catalogue={catalogue} />
+      <StorefrontFooter design={snapshot.design} preview={preview} navigation={snapshot.navigation} pages={snapshot.pages?.custom} catalogue={catalogue} />
     </div>
   );
 }
 
 export function supportsPublishedSnapshot(snapshot: StorefrontSnapshot) {
-  return unsupportedVisibleSections([...snapshot.homepage.sections, ...(snapshot.pages?.product.sections ?? [])]).length === 0;
+  return unsupportedVisibleSections([...snapshot.homepage.sections, ...(snapshot.pages?.product.sections ?? []), ...(snapshot.pages?.custom ?? []).filter((page) => page.status === "ACTIVE").flatMap((page) => page.sections)]).length === 0;
 }
