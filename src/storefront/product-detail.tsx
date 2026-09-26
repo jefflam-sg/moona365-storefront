@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import type { ReactNode } from "react";
 import type { HomepageCatalogue, HomepageSection, PublicProduct } from "./contracts";
 import { addCartLine, toggleWishlist, wishlistHas } from "./commerce-local";
 import { StorefrontIcon } from "./icons";
@@ -39,6 +40,36 @@ function productPrice(product: PublicProduct, selected?: Variant) {
   return Number(low.price.amount) === Number(high.price.amount) ? money(low.price.amount, low.price.currency) : `${money(low.price.amount, low.price.currency)} – ${money(high.price.amount, high.price.currency)}`;
 }
 
+function formattedInline(text: string): ReactNode[] {
+  const pattern = /(\*\*[^*\n]+\*\*|_[^_\n]+_|\+\+[^+\n]+\+\+|\[[^\]\n]+\]\((?:https?:\/\/|\/(?!\/))[^)\s]+\))/gu;
+  const nodes: ReactNode[] = []; let cursor = 0;
+  for (const match of text.matchAll(pattern)) {
+    const index = match.index ?? 0; if (index > cursor) nodes.push(text.slice(cursor, index));
+    const token = match[0]; const key = `${index}-${token}`;
+    if (token.startsWith("**")) nodes.push(<strong key={key}>{token.slice(2, -2)}</strong>);
+    else if (token.startsWith("++")) nodes.push(<u key={key}>{token.slice(2, -2)}</u>);
+    else if (token.startsWith("_")) nodes.push(<em key={key}>{token.slice(1, -1)}</em>);
+    else { const parts = /^\[([^\]]+)\]\((.+)\)$/u.exec(token); if (parts) nodes.push(<Link key={key} href={parts[2]}>{parts[1]}</Link>); }
+    cursor = index + token.length;
+  }
+  if (cursor < text.length) nodes.push(text.slice(cursor));
+  return nodes;
+}
+
+function FormattedParagraph({ text }: { text: string }) {
+  const output: ReactNode[] = []; const lines = text.split(/\r?\n/u); let index = 0;
+  while (index < lines.length) {
+    const line = lines[index];
+    if (/^-\s+/u.test(line)) { const items: string[] = []; while (index < lines.length && /^-\s+/u.test(lines[index])) items.push(lines[index++].replace(/^-\s+/u, "")); output.push(<ul key={`ul-${index}`}>{items.map((item, position) => <li key={position}>{formattedInline(item)}</li>)}</ul>); continue; }
+    if (/^\d+\.\s+/u.test(line)) { const items: string[] = []; while (index < lines.length && /^\d+\.\s+/u.test(lines[index])) items.push(lines[index++].replace(/^\d+\.\s+/u, "")); output.push(<ol key={`ol-${index}`}>{items.map((item, position) => <li key={position}>{formattedInline(item)}</li>)}</ol>); continue; }
+    if (/^##\s+/u.test(line)) output.push(<h3 key={index}>{formattedInline(line.replace(/^##\s+/u, ""))}</h3>);
+    else if (/^>\s+/u.test(line)) output.push(<blockquote key={index}>{formattedInline(line.replace(/^>\s+/u, ""))}</blockquote>);
+    else if (line.trim()) output.push(<p key={index}>{formattedInline(line)}</p>);
+    index += 1;
+  }
+  return <>{output}</>;
+}
+
 function RichDescription({ product }: { product: PublicProduct }) {
   const content = product.descriptionContent;
   const [videoPlayer, setVideoPlayer] = useState<{ videoId: string; title: string } | null>(null);
@@ -51,7 +82,7 @@ function RichDescription({ product }: { product: PublicProduct }) {
   if (!content?.blocks.length)
     return product.longDescription || product.shortDescription ? <p>{product.longDescription || product.shortDescription}</p> : null;
   return <><div className="sf-rich-description">{content.blocks.map((block, index) => {
-    if (block.type === "paragraph") return <p key={`paragraph-${index}`}>{block.text}</p>;
+    if (block.type === "paragraph") return <FormattedParagraph key={`paragraph-${index}`} text={block.text} />;
     if (block.type === "video") {
       const title = block.title || "Product video";
       return <button type="button" className="sf-rich-description-video" key={`video-${index}`} aria-label={`Play ${title}`} onClick={() => setVideoPlayer({ videoId: block.videoId, title })}><img src={`https://i.ytimg.com/vi/${block.videoId}/hqdefault.jpg`} alt="" /><span aria-hidden="true">▶</span><strong>{title}</strong></button>;
