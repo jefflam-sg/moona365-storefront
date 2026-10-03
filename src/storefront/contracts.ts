@@ -179,6 +179,7 @@ export type StorefrontSnapshot = {
   pages?: { product: { schemaVersion: 1; sections: HomepageSection[] }; custom?: WebsiteCustomPage[] };
   navigation?: WebsiteNavigation;
   cart?: { schemaVersion: 1; openBehavior: "AFTER_ADD" | "ON_CLICK" };
+  delivery?: { schemaVersion: 1; enabled: boolean; flatFee: string; freeShippingThreshold: string | null };
 };
 
 export type NavigationDestination =

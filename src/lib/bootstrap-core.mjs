@@ -12,7 +12,7 @@ const bootstrapKeys = [
   "snapshot",
 ];
 const legacySnapshotKeys = ["contractVersion", "theme", "design", "homepage"];
-const snapshotKeys = [...legacySnapshotKeys, "pages", "navigation", "cart"];
+const snapshotKeys = [...legacySnapshotKeys, "pages", "navigation", "cart", "delivery"];
 const registeredBlocks = new Set([
   "hero",
   "categories",
@@ -80,7 +80,8 @@ function isSnapshotEnvelope(value) {
     !Array.isArray(value.homepage.sections) ||
     value.homepage.sections.length > 20 ||
     (value.pages !== undefined && (!isRecord(value.pages) || !(["product"].every((key) => Object.hasOwn(value.pages, key)) && Object.keys(value.pages).every((key) => ["product", "custom"].includes(key))) || !isRecord(value.pages.product) || !hasExactKeys(value.pages.product, ["schemaVersion", "sections"]) || value.pages.product.schemaVersion !== 1 || !Array.isArray(value.pages.product.sections) || value.pages.product.sections.length > 20 || (value.pages.custom !== undefined && (!Array.isArray(value.pages.custom) || value.pages.custom.length > 30)))) ||
-    (value.cart !== undefined && (!isRecord(value.cart) || !hasExactKeys(value.cart, ["schemaVersion", "openBehavior"]) || value.cart.schemaVersion !== 1 || !["AFTER_ADD", "ON_CLICK"].includes(value.cart.openBehavior)))
+    (value.cart !== undefined && (!isRecord(value.cart) || !hasExactKeys(value.cart, ["schemaVersion", "openBehavior"]) || value.cart.schemaVersion !== 1 || !["AFTER_ADD", "ON_CLICK"].includes(value.cart.openBehavior))) ||
+    (value.delivery !== undefined && (!isRecord(value.delivery) || !hasExactKeys(value.delivery, ["schemaVersion", "enabled", "flatFee", "freeShippingThreshold"]) || value.delivery.schemaVersion !== 1 || typeof value.delivery.enabled !== "boolean" || !/^(0|[1-9]\d{0,7})(?:\.\d{1,2})?$/.test(value.delivery.flatFee) || (value.delivery.freeShippingThreshold !== null && (!/^(0|[1-9]\d{0,7})(?:\.\d{1,2})?$/.test(value.delivery.freeShippingThreshold) || Number(value.delivery.freeShippingThreshold) <= 0))))
   )
     return false;
 

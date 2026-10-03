@@ -92,6 +92,14 @@ test("accepts bounded cart behavior and rejects unknown cart settings", () => {
   assert.equal(isPublicBootstrap(response, "alpha.example.com"), false);
 });
 
+test("accepts bounded delivery settings and rejects malformed thresholds", () => {
+  const response = responseFor("alpha.example.com", "site-a");
+  response.snapshot.delivery = { schemaVersion: 1, enabled: true, flatFee: "5.00", freeShippingThreshold: "50.00" };
+  assert.equal(isPublicBootstrap(response, "alpha.example.com"), true);
+  response.snapshot.delivery.freeShippingThreshold = "0.00";
+  assert.equal(isPublicBootstrap(response, "alpha.example.com"), false);
+});
+
 test("accepts bounded custom pages and rejects duplicate page slugs", () => {
   const response = responseFor("alpha.example.com", "site-a");
   const page = { id: "about", title: "About us", slug: "about-us", status: "ACTIVE", seo: { title: "", description: "", image: null }, schemaVersion: 1, sections: [{ id: "story", type: "content-columns", version: 1, visible: true }] };
