@@ -84,6 +84,14 @@ test("accepts published Content Columns sections", () => {
   assert.equal(isPublicBootstrap(response, "alpha.example.com"), true);
 });
 
+test("accepts bounded cart behavior and rejects unknown cart settings", () => {
+  const response = responseFor("alpha.example.com", "site-a");
+  response.snapshot.cart = { schemaVersion: 1, openBehavior: "ON_CLICK" };
+  assert.equal(isPublicBootstrap(response, "alpha.example.com"), true);
+  response.snapshot.cart.openBehavior = "ALWAYS_OPEN";
+  assert.equal(isPublicBootstrap(response, "alpha.example.com"), false);
+});
+
 test("accepts bounded custom pages and rejects duplicate page slugs", () => {
   const response = responseFor("alpha.example.com", "site-a");
   const page = { id: "about", title: "About us", slug: "about-us", status: "ACTIVE", seo: { title: "", description: "", image: null }, schemaVersion: 1, sections: [{ id: "story", type: "content-columns", version: 1, visible: true }] };

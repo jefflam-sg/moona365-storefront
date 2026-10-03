@@ -178,6 +178,7 @@ export type StorefrontSnapshot = {
   homepage: { schemaVersion: 1; sections: HomepageSection[] };
   pages?: { product: { schemaVersion: 1; sections: HomepageSection[] }; custom?: WebsiteCustomPage[] };
   navigation?: WebsiteNavigation;
+  cart?: { schemaVersion: 1; openBehavior: "AFTER_ADD" | "ON_CLICK" };
 };
 
 export type NavigationDestination =

@@ -12,9 +12,7 @@ const bootstrapKeys = [
   "snapshot",
 ];
 const legacySnapshotKeys = ["contractVersion", "theme", "design", "homepage"];
-const navigationSnapshotKeys = [...legacySnapshotKeys, "navigation"];
-const pagesSnapshotKeys = [...legacySnapshotKeys, "pages"];
-const pagesNavigationSnapshotKeys = [...legacySnapshotKeys, "pages", "navigation"];
+const snapshotKeys = [...legacySnapshotKeys, "pages", "navigation", "cart"];
 const registeredBlocks = new Set([
   "hero",
   "categories",
@@ -68,7 +66,8 @@ export function normalizeRequestedHost(value) {
 function isSnapshotEnvelope(value) {
   if (
     !isRecord(value) ||
-    (![legacySnapshotKeys, navigationSnapshotKeys, pagesSnapshotKeys, pagesNavigationSnapshotKeys].some((keys) => hasExactKeys(value, keys))) ||
+    !legacySnapshotKeys.every((key) => Object.hasOwn(value, key)) ||
+    Object.keys(value).some((key) => !snapshotKeys.includes(key)) ||
     value.contractVersion !== 1 ||
     !isRecord(value.theme) ||
     !hasExactKeys(value.theme, ["code", "version"]) ||
@@ -80,7 +79,8 @@ function isSnapshotEnvelope(value) {
     value.homepage.schemaVersion !== 1 ||
     !Array.isArray(value.homepage.sections) ||
     value.homepage.sections.length > 20 ||
-    (value.pages !== undefined && (!isRecord(value.pages) || !(["product"].every((key) => Object.hasOwn(value.pages, key)) && Object.keys(value.pages).every((key) => ["product", "custom"].includes(key))) || !isRecord(value.pages.product) || !hasExactKeys(value.pages.product, ["schemaVersion", "sections"]) || value.pages.product.schemaVersion !== 1 || !Array.isArray(value.pages.product.sections) || value.pages.product.sections.length > 20 || (value.pages.custom !== undefined && (!Array.isArray(value.pages.custom) || value.pages.custom.length > 30))))
+    (value.pages !== undefined && (!isRecord(value.pages) || !(["product"].every((key) => Object.hasOwn(value.pages, key)) && Object.keys(value.pages).every((key) => ["product", "custom"].includes(key))) || !isRecord(value.pages.product) || !hasExactKeys(value.pages.product, ["schemaVersion", "sections"]) || value.pages.product.schemaVersion !== 1 || !Array.isArray(value.pages.product.sections) || value.pages.product.sections.length > 20 || (value.pages.custom !== undefined && (!Array.isArray(value.pages.custom) || value.pages.custom.length > 30)))) ||
+    (value.cart !== undefined && (!isRecord(value.cart) || !hasExactKeys(value.cart, ["schemaVersion", "openBehavior"]) || value.cart.schemaVersion !== 1 || !["AFTER_ADD", "ON_CLICK"].includes(value.cart.openBehavior)))
   )
     return false;
 

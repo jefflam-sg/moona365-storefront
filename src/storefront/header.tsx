@@ -3,11 +3,11 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import type { HomepageCatalogue, WebsiteCustomPage, WebsiteDesign, WebsiteNavigation } from "./contracts";
+import type { HomepageCatalogue, StorefrontSnapshot, WebsiteCustomPage, WebsiteDesign, WebsiteNavigation } from "./contracts";
 import { StorefrontIcon } from "./icons";
 import { resolveNavigation, type ResolvedNavigationNode } from "./navigation";
 import { safeImageSource } from "./safe-values";
-import { CART_EVENT, CART_OPEN_EVENT, cartCount, loadCart } from "./commerce-local";
+import { CART_EVENT, CART_OPEN_EVENT, cartCount, configureCart, loadCart } from "./commerce-local";
 import { CartDrawer } from "./cart-ui";
 import { LiveProductSearch } from "./live-product-search";
 
@@ -33,7 +33,7 @@ function MenuIcon() {
   return <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" /></svg>;
 }
 
-export function StorefrontHeader({ design, preview, navigation, pages = [], catalogue = { categories: [], collections: [], productsBySectionId: {} } }: { design: WebsiteDesign; preview: boolean; navigation?: WebsiteNavigation; pages?: WebsiteCustomPage[]; catalogue?: HomepageCatalogue }) {
+export function StorefrontHeader({ design, preview, navigation, cart, pages = [], catalogue = { categories: [], collections: [], productsBySectionId: {} } }: { design: WebsiteDesign; preview: boolean; navigation?: WebsiteNavigation; cart?: StorefrontSnapshot["cart"]; pages?: WebsiteCustomPage[]; catalogue?: HomepageCatalogue }) {
   const { header } = design;
   const items = resolveNavigation("main", navigation, catalogue, pages);
   const pathname = usePathname();
@@ -42,6 +42,9 @@ export function StorefrontHeader({ design, preview, navigation, pages = [], cata
   const [cartItems, setCartItems] = useState(0);
   const root = useRef<HTMLElement>(null);
 
+  useEffect(() => {
+    configureCart(cart?.openBehavior);
+  }, [cart?.openBehavior]);
   useEffect(() => {
     const close = (event: PointerEvent) => { if (!root.current?.contains(event.target as Node)) setOpen(null); };
     const escape = (event: KeyboardEvent) => { if (event.key === "Escape") { setOpen(null); setMobile(false); } };
