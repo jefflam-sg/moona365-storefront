@@ -33,6 +33,7 @@ export function NewsletterSignup({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          name: form.get("name"),
           email: form.get("email"),
           phone: form.get("phone"),
           company: form.get("company"),
@@ -102,6 +103,15 @@ export function NewsletterSignup({
         </small>
       </fieldset>
       <div className="sf-newsletter-submit">
+        <input
+          name="name"
+          type="text"
+          maxLength={120}
+          autoComplete="name"
+          placeholder="Your name (optional)"
+          aria-label="Name (optional)"
+          disabled={preview}
+        />
         <input
           name="email"
           type="email"
