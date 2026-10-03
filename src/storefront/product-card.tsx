@@ -64,13 +64,14 @@ export function ProductCard({ product }: { product: PublicProduct }) {
   const optionLabel = product.variantOptionName || "Option";
   const cartLabel = resolved?.purchasable ? "Add to Cart" : product.variants.some((variant) => variant.purchasable) ? "Select Options" : "Sold Out";
   const selectVariant = (variant: Variant) => { setSelectedId(variant.id); setMissing(false); };
-  const add = (quantity = 1) => {
+  const add = async (quantity = 1) => {
     if (!resolved || !resolved.purchasable) {
       if (inlineOptions) { setMissing(true); setPulse(true); window.setTimeout(() => setPulse(false), 750); }
       else setQuickView(true);
       return;
     }
-    addCartLine(product.id, resolved.id, quantity); setAdded(true); window.setTimeout(() => setAdded(false), 1400);
+    try { await addCartLine(product.id, resolved.id, quantity); setAdded(true); window.setTimeout(() => setAdded(false), 1400); }
+    catch { setMissing(true); }
   };
   const variants = useMemo(() => product.variants, [product.variants]);
   return <article className="sf-product-card" data-sold-out={!product.variants.some((variant) => variant.purchasable)}>
@@ -78,7 +79,7 @@ export function ProductCard({ product }: { product: PublicProduct }) {
       <Link href={href} aria-label={`View ${displayName}`}>{image && src ? <img src={src} alt={image.alt || displayName} /> : <div className="sf-catalogue-placeholder" aria-hidden="true" />}</Link>
       <div className="sf-product-badges">{product.isNew && <span>NEW</span>}{saleBadge && <span>{saleBadge}</span>}</div>
       <div className="sf-card-actions">
-        <button type="button" aria-label={cartLabel} data-tooltip={cartLabel} onClick={() => add()}><ActionIcon name="cart" /></button>
+        <button type="button" aria-label={cartLabel} data-tooltip={cartLabel} onClick={() => void add()}><ActionIcon name="cart" /></button>
         <button type="button" aria-label="Quick View" data-tooltip="Quick View" onClick={() => setQuickView(true)}><ActionIcon name="eye" /></button>
         <button type="button" aria-label={wishlisted ? "Remove from Wishlist" : "Add to Wishlist"} data-tooltip={wishlisted ? "Remove from Wishlist" : "Add to Wishlist"} aria-pressed={wishlisted} onClick={() => setWishlisted(toggleWishlist(product.id))}><ActionIcon name="heart" /></button>
       </div>
@@ -95,7 +96,7 @@ export function ProductCard({ product }: { product: PublicProduct }) {
   </article>;
 }
 
-function QuickView({ product, selectedId, onSelect, onClose, onAdd }: { product: PublicProduct; selectedId: string; onSelect: (variant: Variant) => void; onClose: () => void; onAdd: (quantity?: number) => void }) {
+function QuickView({ product, selectedId, onSelect, onClose, onAdd }: { product: PublicProduct; selectedId: string; onSelect: (variant: Variant) => void; onClose: () => void; onAdd: (quantity?: number) => void | Promise<void> }) {
   const [quantity, setQuantity] = useState(1); const selected = product.variants.find((variant) => variant.id === selectedId);
   const image = selected?.primaryImage ?? product.primaryImage; const src = image ? safeImageSource(image.src) : null; const price = priceDisplay(product, selected);
   return <div className="sf-quick-view-backdrop" role="presentation" onMouseDown={(event) => event.target === event.currentTarget && onClose()}><section className="sf-quick-view" role="dialog" aria-modal="true" aria-label={`Quick view: ${product.name}`}>
@@ -104,7 +105,7 @@ function QuickView({ product, selectedId, onSelect, onClose, onAdd }: { product:
     <div><h2>{product.name}</h2><div className="sf-card-price">{price.original && <del>{price.original}</del>}<strong>{price.current}</strong></div>{product.shortDescription && <p>{product.shortDescription}</p>}
       {product.variantOptionName && product.variants.length > 0 && <fieldset><legend>{product.variantOptionName}</legend><div className="sf-quick-options">{product.variants.map((variant) => <button type="button" key={variant.id} disabled={!variant.purchasable} aria-pressed={selectedId === variant.id} onClick={() => onSelect(variant)}>{variant.label || "Standard"}</button>)}</div></fieldset>}
       <p className="sf-availability">{selected ? (selected.purchasable ? "In stock" : "Sold out") : "Select an option to continue"}</p>
-      <div className="sf-quick-buy"><label>Quantity<input type="number" min="1" max="99" value={quantity} onChange={(event) => setQuantity(Math.max(1, Math.min(99, Number(event.target.value) || 1)))} /></label><button type="button" disabled={!selected?.purchasable} onClick={() => onAdd(quantity)}>{selected ? (selected.purchasable ? "Add to Cart" : "Sold Out") : "Select Options"}</button></div>
+      <div className="sf-quick-buy"><label>Quantity<input type="number" min="1" max="99" value={quantity} onChange={(event) => setQuantity(Math.max(1, Math.min(99, Number(event.target.value) || 1)))} /></label><button type="button" disabled={!selected?.purchasable} onClick={() => void onAdd(quantity)}>{selected ? (selected.purchasable ? "Add to Cart" : "Sold Out") : "Select Options"}</button></div>
       <Link href={`/products/${product.slug}${product.selectedVariantId ? `?variant=${encodeURIComponent(product.selectedVariantId)}` : ""}`}>View Full Details →</Link>
     </div>
   </section></div>;

@@ -1,34 +1,16 @@
 export const CART_EVENT = "moona365:cart-change";
-const CART_KEY = "moona365-storefront-cart";
+export const CART_OPEN_EVENT = "moona365:cart-open";
+const LEGACY_CART_KEY = "moona365-storefront-cart";
 const WISHLIST_KEY = "moona365-storefront-wishlist";
-
-type CartLine = { productId: string; variantId: string; quantity: number };
-
-function read<T>(key: string, fallback: T): T {
-  if (typeof window === "undefined") return fallback;
-  try { return JSON.parse(localStorage.getItem(key) ?? "") as T; } catch { return fallback; }
-}
-
-export function cartCount() {
-  return read<CartLine[]>(CART_KEY, []).reduce((total, line) => total + line.quantity, 0);
-}
-
-export function addCartLine(productId: string, variantId: string, quantity = 1) {
-  const lines = read<CartLine[]>(CART_KEY, []);
-  const existing = lines.find((line) => line.productId === productId && line.variantId === variantId);
-  if (existing) existing.quantity += quantity;
-  else lines.push({ productId, variantId, quantity });
-  localStorage.setItem(CART_KEY, JSON.stringify(lines));
-  window.dispatchEvent(new CustomEvent(CART_EVENT));
-}
-
-export function wishlistHas(productId: string) {
-  return read<string[]>(WISHLIST_KEY, []).includes(productId);
-}
-
-export function toggleWishlist(productId: string) {
-  const values = new Set(read<string[]>(WISHLIST_KEY, []));
-  if (values.has(productId)) values.delete(productId); else values.add(productId);
-  localStorage.setItem(WISHLIST_KEY, JSON.stringify([...values]));
-  return values.has(productId);
-}
+export type CartNotice={code:string;severity:"INFO"|"WARNING"|"BLOCKING";requiresAcknowledgement:boolean;params:Record<string,unknown>};
+export type CartLine={lineId:string;productId:string;variantId:string;productName:string;productSlug:string;variantLabel:string;image:{src:string;alt:string}|null;requestedQuantity:number;maximumQuantity:number;availabilityStatus:string;regularUnitPrice:string;effectiveUnitPrice:string;discount:string;lineTotal:string;notices:CartNotice[]};
+export type WebsiteCart={apiVersion:1;id:string;revision:number;currency:string;fulfillmentLocationName:string;expiresAt:string;itemCount:number;cartReadyForCheckout:boolean;orderNote:string;lines:CartLine[];promotions:Array<{id:string;name:string}>;subtotal:string;discountTotal:string;gstAmount:string;gstInclusive:boolean;estimatedTotal:string;notices:CartNotice[]};
+let current:WebsiteCart|null=null;let loading:Promise<WebsiteCart>|null=null;
+function announce(open=false){window.dispatchEvent(new CustomEvent(CART_EVENT,{detail:current}));if(open)window.dispatchEvent(new CustomEvent(CART_OPEN_EVENT));}
+async function request(method:"GET"|"POST",mutation?:Record<string,unknown>){const options:RequestInit={method,cache:"no-store",headers:mutation?{"Content-Type":"application/json"}:undefined,body:mutation?JSON.stringify({mutation}):undefined};let response:Response;try{response=await fetch("/api/cart",options);}catch{response=await fetch("/api/cart",options);}const value=await response.json().catch(()=>({message:"Cart is temporarily unavailable."}));if(!response.ok){if(value?.details?.cart){current=value.details.cart;announce();}throw new Error(value?.message||"Cart is temporarily unavailable.");}current=value.cart??value;announce();return current!;}
+const mutationId=()=>crypto.randomUUID().replaceAll("-","");
+export function cartSnapshot(){return current;}export function cartCount(){return current?.itemCount??0;}
+export async function loadCart(){if(current)return current;if(loading)return loading;loading=(async()=>{const cart=await request("GET");try{const legacy=JSON.parse(localStorage.getItem(LEGACY_CART_KEY)??"[]") as Array<{productId:string;variantId:string;quantity:number}>;localStorage.removeItem(LEGACY_CART_KEY);for(const line of legacy){if(line?.productId&&line?.variantId&&Number.isSafeInteger(line.quantity)&&line.quantity>0)await mutate({action:"ADD",productId:line.productId,variantId:line.variantId,quantity:Math.min(99,line.quantity)});}}catch{}return current??cart;})();try{return await loading;}finally{loading=null;}}
+export async function mutate(change:Record<string,unknown>,open=false){const cart=current??await loadCart();const next=await request("POST",{...change,expectedRevision:cart.revision,mutationId:mutationId()});if(open)announce(true);return next;}
+export async function addCartLine(productId:string,variantId:string,quantity=1){return mutate({action:"ADD",productId,variantId,quantity},true);}export async function setCartLineQuantity(lineId:string,quantity:number){return mutate({action:"SET_QUANTITY",lineId,quantity});}export async function removeCartLine(lineId:string){return mutate({action:"REMOVE",lineId});}export async function setCartNote(note:string){return mutate({action:"SET_NOTE",note});}export async function acknowledgeCartChanges(){return mutate({action:"ACKNOWLEDGE_CHANGES"});}
+function read<T>(key:string,fallback:T):T{if(typeof window==="undefined")return fallback;try{return JSON.parse(localStorage.getItem(key)??"") as T;}catch{return fallback;}}export function wishlistHas(productId:string){return read<string[]>(WISHLIST_KEY,[]).includes(productId);}export function toggleWishlist(productId:string){const values=new Set(read<string[]>(WISHLIST_KEY,[]));if(values.has(productId))values.delete(productId);else values.add(productId);localStorage.setItem(WISHLIST_KEY,JSON.stringify([...values]));return values.has(productId);}

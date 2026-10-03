@@ -142,11 +142,11 @@ export function ProductDetail({ product, initialVariantId, recommendations = [],
     if (source) setActiveImage(source);
     setNotice("");
   };
-  const add = () => {
+  const add = async () => {
     if (!selectedVariant) { setNotice(`Please select ${product.variantOptionName || "an option"}.`); return; }
     if (!selectedVariant.purchasable) { setNotice("This option is currently unavailable."); return; }
-    addCartLine(product.id, selectedVariant.id, quantity);
-    setNotice("Added to cart.");
+    try { await addCartLine(product.id, selectedVariant.id, quantity); setNotice("Added to cart."); }
+    catch { setNotice("We could not add this option. Please try again."); }
   };
   const moveImage = (direction: -1 | 1) => {
     if (images.length < 2) return;

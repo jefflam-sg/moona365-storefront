@@ -7,7 +7,8 @@ import type { HomepageCatalogue, WebsiteCustomPage, WebsiteDesign, WebsiteNaviga
 import { StorefrontIcon } from "./icons";
 import { resolveNavigation, type ResolvedNavigationNode } from "./navigation";
 import { safeImageSource } from "./safe-values";
-import { CART_EVENT, cartCount } from "./commerce-local";
+import { CART_EVENT, CART_OPEN_EVENT, cartCount, loadCart } from "./commerce-local";
+import { CartDrawer } from "./cart-ui";
 import { LiveProductSearch } from "./live-product-search";
 
 export function StorefrontBrand({ design, preview = false }: { design: WebsiteDesign; preview?: boolean }) {
@@ -50,13 +51,13 @@ export function StorefrontHeader({ design, preview, navigation, pages = [], cata
   }, []);
   useEffect(() => {
     const update = () => setCartItems(cartCount());
-    update(); window.addEventListener(CART_EVENT, update); window.addEventListener("storage", update);
-    return () => { window.removeEventListener(CART_EVENT, update); window.removeEventListener("storage", update); };
-  }, []);
+    update(); if (!preview) void loadCart(); window.addEventListener(CART_EVENT, update);
+    return () => { window.removeEventListener(CART_EVENT, update); };
+  }, [preview]);
 
   const nested = (children: ResolvedNavigationNode[]) => <ul>{children.map((child) => <li key={child.id}><NavLink item={child} preview={preview} />{child.children.length > 0 && nested(child.children)}</li>)}</ul>;
 
-  return <header ref={root} className="sf-header" data-sticky={header.sticky} data-position={header.logoPosition} data-style={header.style}>
+  return <><header ref={root} className="sf-header" data-sticky={header.sticky} data-position={header.logoPosition} data-style={header.style}>
     {header.showAnnouncement && <div className="sf-announcement">{header.announcement}</div>}
     <div className="sf-header-main sf-width">
       <div className="sf-brand"><StorefrontBrand design={design} preview={preview} /></div>
@@ -76,8 +77,8 @@ export function StorefrontHeader({ design, preview, navigation, pages = [], cata
       })}</ul></nav>
       <div className="sf-tools" aria-label="Store tools">
         <button type="button" disabled={preview} aria-label="Account"><StorefrontIcon name="account" /></button>
-        <button type="button" disabled={preview} aria-label={`Cart, ${cartItems} item${cartItems === 1 ? "" : "s"}`}><StorefrontIcon name="cart" /><sup>{cartItems}</sup></button>
+        <button type="button" disabled={preview} aria-label={`Cart, ${cartItems} item${cartItems === 1 ? "" : "s"}`} onClick={() => window.dispatchEvent(new CustomEvent(CART_OPEN_EVENT))}><StorefrontIcon name="cart" /><sup>{cartItems}</sup></button>
       </div>
     </div>
-  </header>;
+  </header>{!preview && <CartDrawer />}</>;
 }
