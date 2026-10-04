@@ -22,7 +22,14 @@ export default function CustomerLoginPage() {
       });
       const value = await response.json();
       if (!response.ok) throw new Error(value.message);
-      router.replace("/account");
+      const requested = new URLSearchParams(window.location.search).get(
+        "returnTo",
+      );
+      const returnTo =
+        requested?.startsWith("/") && !requested.startsWith("//")
+          ? requested
+          : "/account";
+      router.replace(returnTo);
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Login failed.");
     } finally {

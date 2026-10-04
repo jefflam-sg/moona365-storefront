@@ -115,10 +115,21 @@ export function CheckoutContent() {
     [phone, setPhone] = useState("");
   const [marketingOptIn, setMarketingOptIn] = useState(false);
   const [createAccount, setCreateAccount] = useState(false);
+  const [signedIn, setSignedIn] = useState(false);
   const [line1, setLine1] = useState(""),
     [line2, setLine2] = useState(""),
     [city, setCity] = useState(""),
     [postal, setPostal] = useState("");
+  const [shipToDifferentRecipient, setShipToDifferentRecipient] =
+    useState(false);
+  const [recipientFirstName, setRecipientFirstName] = useState(""),
+    [recipientLastName, setRecipientLastName] = useState(""),
+    [recipientPhoneCountryCode, setRecipientPhoneCountryCode] = useState("+65"),
+    [recipientPhone, setRecipientPhone] = useState("");
+  const [recipientLine1, setRecipientLine1] = useState(""),
+    [recipientLine2, setRecipientLine2] = useState(""),
+    [recipientCity, setRecipientCity] = useState(""),
+    [recipientPostal, setRecipientPostal] = useState("");
   const [orderNote, setOrderNote] = useState(""),
     [error, setError] = useState(""),
     [busy, setBusy] = useState(false);
@@ -139,6 +150,34 @@ export function CheckoutContent() {
           caught instanceof Error ? caught.message : "Cart is unavailable.",
         ),
       );
+  }, []);
+  useEffect(() => {
+    void fetch("/api/account/session", { cache: "no-store" })
+      .then(async (response) =>
+        response.ok ? ((await response.json()).customer ?? null) : null,
+      )
+      .then((customer) => {
+        if (!customer) return;
+        setSignedIn(true);
+        setFirstName((current) => current || customer.firstName || "");
+        setLastName((current) => current || customer.lastName || "");
+        setCompanyName((current) => current || customer.companyName || "");
+        setEmail((current) => current || customer.email || "");
+        const countryCode = customer.phoneCountryCode || "+65";
+        setPhoneCountryCode(countryCode);
+        setPhone(
+          (current) =>
+            current || String(customer.phone || "").replace(countryCode, ""),
+        );
+        const address = customer.defaultAddress;
+        if (address) {
+          setLine1((current) => current || address.line1 || "");
+          setLine2((current) => current || address.line2 || "");
+          setCity((current) => current || address.city || "");
+          setPostal((current) => current || address.postalCode || "");
+        }
+      })
+      .catch(() => undefined);
   }, []);
   const options = useMemo(
     () =>
@@ -189,14 +228,29 @@ export function CheckoutContent() {
           marketingOptIn,
           createAccount,
           fulfillmentMethod: method,
-          address:
-            method === "DELIVERY"
+          buyerAddress: {
+            line1: line1.trim(),
+            line2: line2.trim(),
+            city: city.trim() || "Singapore",
+            postalCode: postal,
+            countryCode: "SG",
+          },
+          shipToDifferentRecipient:
+            method === "DELIVERY" && shipToDifferentRecipient,
+          recipient:
+            method === "DELIVERY" && shipToDifferentRecipient
               ? {
-                  line1: line1.trim(),
-                  line2: line2.trim(),
-                  city: city.trim() || "Singapore",
-                  postalCode: postal,
-                  countryCode: "SG",
+                  firstName: recipientFirstName.trim(),
+                  lastName: recipientLastName.trim(),
+                  phoneCountryCode: recipientPhoneCountryCode,
+                  phone: recipientPhone.replace(/[\s()-]/g, ""),
+                  address: {
+                    line1: recipientLine1.trim(),
+                    line2: recipientLine2.trim(),
+                    city: recipientCity.trim() || "Singapore",
+                    postalCode: recipientPostal,
+                    countryCode: "SG",
+                  },
                 }
               : null,
         }),
@@ -260,6 +314,28 @@ export function CheckoutContent() {
           onSubmit={begin}
           noValidate
         >
+          <div className="sf-checkout-returning">
+            <span className="sf-checkout-returning-icon" aria-hidden="true">
+              &#9786;
+            </span>
+            <span>
+              <strong>
+                {signedIn ? "Welcome back" : "Returning customer?"}
+              </strong>
+              <small>
+                {signedIn
+                  ? "Your saved details have been added to this checkout."
+                  : "Log in for a faster checkout and to view your orders."}
+              </small>
+            </span>
+            {signedIn ? (
+              <Link href="/account">View account</Link>
+            ) : (
+              <Link href="/account/login?returnTo=/checkout">
+                Click here to log in
+              </Link>
+            )}
+          </div>
           <fieldset>
             <legend>Contact details</legend>
             <p>We’ll use this information to send your order updates.</p>
@@ -387,37 +463,273 @@ export function CheckoutContent() {
                 />
               </label>
             </div>
-            <label className="sf-checkout-consent">
-              <input
-                type="checkbox"
-                checked={createAccount}
-                onChange={(event) => setCreateAccount(event.target.checked)}
-              />
-              <span>
-                Save my details and create an account for faster checkout next
-                time.
-                <small>
-                  After payment, we’ll email a secure link to activate your
-                  account and set a password.
-                </small>
-              </span>
-            </label>
-            <label className="sf-checkout-consent">
-              <input
-                type="checkbox"
-                checked={marketingOptIn}
-                onChange={(event) => setMarketingOptIn(event.target.checked)}
-              />
-              <span>
-                Send me Latest News and Updates, New Arrivals, Promotions and
-                Special Deals by email.
-                <small>
-                  You’ll receive a confirmation email and can unsubscribe at any
-                  time.
-                </small>
-              </span>
-            </label>
           </fieldset>
+          <fieldset>
+            <legend>Buyer address</legend>
+            <p>
+              This address will be used for this order and as your account&apos;s
+              default delivery address.
+            </p>
+            <label>
+              Country / Region <b>*</b>
+              <select value="SG" disabled>
+                <option value="SG">Singapore</option>
+              </select>
+            </label>
+            <div className="sf-checkout-address-row">
+              <label>
+                Street address <b>*</b>
+                <input
+                  required
+                  autoComplete="section-buyer shipping address-line1"
+                  placeholder="House number and street name"
+                  value={line1}
+                  maxLength={180}
+                  onChange={(event) => setLine1(event.target.value)}
+                  onBlur={() =>
+                    validate(
+                      "line1",
+                      Boolean(line1.trim()),
+                      "Enter the buyer's street address.",
+                    )
+                  }
+                  aria-invalid={Boolean(validation.line1)}
+                />
+                {validation.line1 && (
+                  <small className="sf-checkout-field-error">
+                    {validation.line1}
+                  </small>
+                )}
+              </label>
+              <label>
+                Apartment, suite or unit <small>(optional)</small>
+                <input
+                  autoComplete="section-buyer shipping address-line2"
+                  value={line2}
+                  maxLength={180}
+                  onChange={(event) => setLine2(event.target.value)}
+                />
+              </label>
+            </div>
+            <div className="sf-checkout-pair">
+              <label>
+                Town / City <small>(optional)</small>
+                <input
+                  autoComplete="section-buyer shipping address-level2"
+                  placeholder="Singapore"
+                  value={city}
+                  maxLength={100}
+                  onChange={(event) => setCity(event.target.value)}
+                />
+              </label>
+              <label>
+                Postcode <b>*</b>
+                <input
+                  required
+                  inputMode="numeric"
+                  pattern="[0-9]{6}"
+                  autoComplete="section-buyer shipping postal-code"
+                  placeholder="e.g. 568730"
+                  value={postal}
+                  maxLength={6}
+                  onChange={(event) =>
+                    setPostal(event.target.value.replace(/\D/g, ""))
+                  }
+                  onBlur={() =>
+                    validate(
+                      "postal",
+                      /^\d{6}$/.test(postal),
+                      "Enter a valid six-digit Singapore postcode.",
+                    )
+                  }
+                  aria-invalid={Boolean(validation.postal)}
+                />
+                {validation.postal && (
+                  <small className="sf-checkout-field-error">
+                    {validation.postal}
+                  </small>
+                )}
+              </label>
+            </div>
+            {method === "DELIVERY" && (
+              <label className="sf-checkout-different-recipient">
+                <input
+                  type="checkbox"
+                  checked={shipToDifferentRecipient}
+                  onChange={(event) =>
+                    setShipToDifferentRecipient(event.target.checked)
+                  }
+                />
+                <span>
+                  <strong>Ship to a different recipient</strong>
+                  <small>
+                    Add the recipient&apos;s name, phone number and delivery
+                    address.
+                  </small>
+                </span>
+              </label>
+            )}
+          </fieldset>
+          <fieldset className="sf-checkout-preferences">
+            <legend>Account and updates</legend>
+            <p>Choose the optional services you would like with this order.</p>
+            <div className="sf-checkout-preference-grid">
+              {!signedIn && (
+                <label className="sf-checkout-choice-card">
+                  <input
+                    type="checkbox"
+                    checked={createAccount}
+                    onChange={(event) => setCreateAccount(event.target.checked)}
+                  />
+                  <span className="sf-checkout-choice-icon" aria-hidden="true">
+                    &#128100;
+                  </span>
+                  <span>
+                    <strong>Create my customer account</strong>
+                    <small>
+                      After payment, we&apos;ll email a secure activation link. Your
+                      order will already be connected to the account.
+                    </small>
+                  </span>
+                </label>
+              )}
+              <label className="sf-checkout-choice-card">
+                <input
+                  type="checkbox"
+                  checked={marketingOptIn}
+                  onChange={(event) => setMarketingOptIn(event.target.checked)}
+                />
+                <span className="sf-checkout-choice-icon" aria-hidden="true">
+                  &#9993;
+                </span>
+                <span>
+                  <strong>Send me news and offers</strong>
+                  <small>
+                    Latest News and Updates, New Arrivals, Promotions and
+                    Special Deals. You can change your preferences or
+                    unsubscribe anytime.
+                  </small>
+                </span>
+              </label>
+            </div>
+          </fieldset>
+          {method === "DELIVERY" && shipToDifferentRecipient && (
+            <fieldset>
+              <legend>Recipient details</legend>
+              <p>
+                Tell us who should receive this delivery and where to send it.
+              </p>
+              <div className="sf-checkout-pair">
+                <label>
+                  First name <b>*</b>
+                  <input
+                    required
+                    autoComplete="section-recipient shipping given-name"
+                    value={recipientFirstName}
+                    maxLength={80}
+                    onChange={(event) =>
+                      setRecipientFirstName(event.target.value)
+                    }
+                  />
+                </label>
+                <label>
+                  Last name <b>*</b>
+                  <input
+                    required
+                    autoComplete="section-recipient shipping family-name"
+                    value={recipientLastName}
+                    maxLength={80}
+                    onChange={(event) =>
+                      setRecipientLastName(event.target.value)
+                    }
+                  />
+                </label>
+              </div>
+              <label>
+                Phone number <b>*</b>
+                <span className="sf-checkout-phone">
+                  <select
+                    aria-label="Recipient country calling code"
+                    value={recipientPhoneCountryCode}
+                    onChange={(event) =>
+                      setRecipientPhoneCountryCode(event.target.value)
+                    }
+                  >
+                    {callingCodes.map(([code, label]) => (
+                      <option value={code} key={code}>
+                        {label}
+                      </option>
+                    ))}
+                  </select>
+                  <input
+                    required
+                    type="tel"
+                    inputMode="tel"
+                    pattern="[0-9 ()-]{6,20}"
+                    autoComplete="section-recipient shipping tel-national"
+                    value={recipientPhone}
+                    maxLength={20}
+                    onChange={(event) => setRecipientPhone(event.target.value)}
+                  />
+                </span>
+              </label>
+              <label>
+                Country / Region <b>*</b>
+                <select value="SG" disabled>
+                  <option value="SG">Singapore</option>
+                </select>
+              </label>
+              <div className="sf-checkout-address-row">
+                <label>
+                  Street address <b>*</b>
+                  <input
+                    required
+                    autoComplete="section-recipient shipping address-line1"
+                    placeholder="House number and street name"
+                    value={recipientLine1}
+                    maxLength={180}
+                    onChange={(event) => setRecipientLine1(event.target.value)}
+                  />
+                </label>
+                <label>
+                  Apartment, suite or unit <small>(optional)</small>
+                  <input
+                    autoComplete="section-recipient shipping address-line2"
+                    value={recipientLine2}
+                    maxLength={180}
+                    onChange={(event) => setRecipientLine2(event.target.value)}
+                  />
+                </label>
+              </div>
+              <div className="sf-checkout-pair">
+                <label>
+                  Town / City <small>(optional)</small>
+                  <input
+                    autoComplete="section-recipient shipping address-level2"
+                    placeholder="Singapore"
+                    value={recipientCity}
+                    maxLength={100}
+                    onChange={(event) => setRecipientCity(event.target.value)}
+                  />
+                </label>
+                <label>
+                  Postcode <b>*</b>
+                  <input
+                    required
+                    inputMode="numeric"
+                    pattern="[0-9]{6}"
+                    autoComplete="section-recipient shipping postal-code"
+                    placeholder="e.g. 568730"
+                    value={recipientPostal}
+                    maxLength={6}
+                    onChange={(event) =>
+                      setRecipientPostal(event.target.value.replace(/\D/g, ""))
+                    }
+                  />
+                </label>
+              </div>
+            </fieldset>
+          )}
           <fieldset>
             <legend>Delivery method</legend>
             <p>Choose how you would like to receive your order.</p>
@@ -432,7 +744,11 @@ export function CheckoutContent() {
                 />
                 <span>
                   <strong>Delivery</strong>
-                  <small>Delivered to your address</small>
+                  <small>
+                    {shipToDifferentRecipient
+                      ? "Delivered to the recipient address"
+                      : "Delivered to the buyer address"}
+                  </small>
                   <b>
                     {cart.delivery?.enabled
                       ? Number(cart.delivery.estimatedFee) > 0
@@ -458,92 +774,6 @@ export function CheckoutContent() {
                 </span>
               </label>
             </div>
-            {method === "DELIVERY" && (
-              <div className="sf-checkout-address">
-                <h3>Shipping address</h3>
-                <label>
-                  Country / Region <b>*</b>
-                  <select value="SG" disabled>
-                    <option value="SG">Singapore</option>
-                  </select>
-                </label>
-                <div className="sf-checkout-address-row">
-                  <label>
-                    Street address <b>*</b>
-                    <input
-                      required
-                      autoComplete="address-line1"
-                      placeholder="House number and street name"
-                      value={line1}
-                      maxLength={180}
-                      onChange={(event) => setLine1(event.target.value)}
-                      onBlur={() =>
-                        validate(
-                          "line1",
-                          Boolean(line1.trim()),
-                          "Enter a street address.",
-                        )
-                      }
-                      aria-invalid={Boolean(validation.line1)}
-                    />
-                    {validation.line1 && (
-                      <small className="sf-checkout-field-error">
-                        {validation.line1}
-                      </small>
-                    )}
-                  </label>
-                  <label>
-                    Apartment, suite or unit <small>(optional)</small>
-                    <input
-                      autoComplete="address-line2"
-                      value={line2}
-                      maxLength={180}
-                      onChange={(event) => setLine2(event.target.value)}
-                    />
-                  </label>
-                </div>
-                <div className="sf-checkout-pair">
-                  <label>
-                    Town / City <small>(optional)</small>
-                    <input
-                      autoComplete="address-level2"
-                      placeholder="Singapore"
-                      value={city}
-                      maxLength={100}
-                      onChange={(event) => setCity(event.target.value)}
-                    />
-                  </label>
-                  <label>
-                    Postcode <b>*</b>
-                    <input
-                      required
-                      inputMode="numeric"
-                      pattern="[0-9]{6}"
-                      autoComplete="postal-code"
-                      placeholder="e.g. 568730"
-                      value={postal}
-                      maxLength={6}
-                      onChange={(event) =>
-                        setPostal(event.target.value.replace(/\D/g, ""))
-                      }
-                      onBlur={() =>
-                        validate(
-                          "postal",
-                          /^\d{6}$/.test(postal),
-                          "Enter a valid six-digit Singapore postcode.",
-                        )
-                      }
-                      aria-invalid={Boolean(validation.postal)}
-                    />
-                    {validation.postal && (
-                      <small className="sf-checkout-field-error">
-                        {validation.postal}
-                      </small>
-                    )}
-                  </label>
-                </div>
-              </div>
-            )}
             <details className="sf-checkout-note">
               <summary>Order notes (optional)</summary>
               <textarea
@@ -554,7 +784,7 @@ export function CheckoutContent() {
               />
               <small>{orderNote.length} / 500</small>
             </details>
-          </fieldset>
+          </fieldset>{" "}
           {error && (
             <p className="sf-checkout-error" role="alert">
               {error}
