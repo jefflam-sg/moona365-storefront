@@ -116,6 +116,11 @@ export function CheckoutContent() {
   const [marketingOptIn, setMarketingOptIn] = useState(false);
   const [createAccount, setCreateAccount] = useState(false);
   const [signedIn, setSignedIn] = useState(false);
+  const [newsletterSubscribed, setNewsletterSubscribed] = useState(false);
+  const [recognition, setRecognition] = useState<
+    "idle" | "checking" | "none" | "prompt" | "guest"
+  >("idle");
+  const [recognizedEmail, setRecognizedEmail] = useState("");
   const [line1, setLine1] = useState(""),
     [line2, setLine2] = useState(""),
     [city, setCity] = useState(""),
@@ -153,12 +158,12 @@ export function CheckoutContent() {
   }, []);
   useEffect(() => {
     void fetch("/api/account/session", { cache: "no-store" })
-      .then(async (response) =>
-        response.ok ? ((await response.json()).customer ?? null) : null,
-      )
-      .then((customer) => {
+      .then(async (response) => (response.ok ? await response.json() : null))
+      .then((session) => {
+        const customer = session?.customer;
         if (!customer) return;
         setSignedIn(true);
+        setNewsletterSubscribed(session.newsletterSubscribed === true);
         setFirstName((current) => current || customer.firstName || "");
         setLastName((current) => current || customer.lastName || "");
         setCompanyName((current) => current || customer.companyName || "");
@@ -198,12 +203,47 @@ export function CheckoutContent() {
       [field]: valid ? "" : message,
     }));
 
+  async function checkAccountRecognition() {
+    const normalized = email.trim().toLowerCase();
+    if (
+      signedIn ||
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalized) ||
+      (recognizedEmail === normalized && recognition !== "idle")
+    )
+      return recognition === "prompt";
+    setRecognition("checking");
+    setRecognizedEmail(normalized);
+    try {
+      const response = await fetch("/api/account/recognition", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: normalized }),
+      });
+      const value = await response.json().catch(() => ({ prompt: false }));
+      const shouldPrompt = response.ok && value.prompt === true;
+      setRecognition(shouldPrompt ? "prompt" : "none");
+      if (shouldPrompt) setCreateAccount(false);
+      return shouldPrompt;
+    } catch {
+      setRecognition("none");
+      return false;
+    }
+  }
+
   async function begin(event: FormEvent) {
     event.preventDefault();
     const form = formRef.current;
     if (!form?.checkValidity()) {
       form?.reportValidity();
       form?.querySelector<HTMLElement>(":invalid")?.focus();
+      return;
+    }
+    if (recognition === "checking") {
+      setError("Please wait while we check the email address.");
+      return;
+    }
+    if (recognition === "prompt" || (await checkAccountRecognition())) {
+      setError("Choose whether to sign in or continue as a guest.");
       return;
     }
     setBusy(true);
@@ -256,6 +296,11 @@ export function CheckoutContent() {
         }),
       });
       const value = await response.json();
+      if (!response.ok && value?.details?.reason === "ACCOUNT_MAY_EXIST") {
+        setRecognition("prompt");
+        setRecognizedEmail(email.trim().toLowerCase());
+        setCreateAccount(false);
+      }
       if (!response.ok)
         throw new Error(value.message ?? "Checkout could not be started.");
       setResult(value);
@@ -347,14 +392,22 @@ export function CheckoutContent() {
                 autoComplete="email"
                 value={email}
                 maxLength={254}
-                onChange={(event) => setEmail(event.target.value)}
-                onBlur={() =>
+                onChange={(event) => {
+                  setEmail(event.target.value);
+                  if (!signedIn) {
+                    setRecognition("idle");
+                    setRecognizedEmail("");
+                    setCreateAccount(false);
+                  }
+                }}
+                onBlur={() => {
                   validate(
                     "email",
                     /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()),
                     "Enter a valid email address.",
-                  )
-                }
+                  );
+                  void checkAccountRecognition();
+                }}
                 aria-invalid={Boolean(validation.email)}
               />
               {validation.email && (
@@ -363,6 +416,35 @@ export function CheckoutContent() {
                 </small>
               )}
             </label>
+            {recognition === "checking" && (
+              <p className="sf-checkout-account-prompt" aria-live="polite">
+                Checking your emailâ€¦
+              </p>
+            )}
+            {recognition === "prompt" && (
+              <div className="sf-checkout-account-prompt" role="status">
+                <span>
+                  <strong>You may already have an account.</strong>
+                  <small>
+                    Sign in to connect this purchase to your account, or
+                    continue with a guest checkout.
+                  </small>
+                </span>
+                <span>
+                  <Link href="/account/login?returnTo=/checkout">Sign in</Link>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setRecognition("guest");
+                      setCreateAccount(false);
+                      setError("");
+                    }}
+                  >
+                    Continue as guest
+                  </button>
+                </span>
+              </div>
+            )}
             <div className="sf-checkout-pair">
               <label>
                 First name <b>*</b>
@@ -467,8 +549,8 @@ export function CheckoutContent() {
           <fieldset>
             <legend>Buyer address</legend>
             <p>
-              This address will be used for this order and as your account&apos;s
-              default delivery address.
+              This address will be used for this order and as your
+              account&apos;s default delivery address.
             </p>
             <label>
               Country / Region <b>*</b>
@@ -569,49 +651,6 @@ export function CheckoutContent() {
                 </span>
               </label>
             )}
-          </fieldset>
-          <fieldset className="sf-checkout-preferences">
-            <legend>Account and updates</legend>
-            <p>Choose the optional services you would like with this order.</p>
-            <div className="sf-checkout-preference-grid">
-              {!signedIn && (
-                <label className="sf-checkout-choice-card">
-                  <input
-                    type="checkbox"
-                    checked={createAccount}
-                    onChange={(event) => setCreateAccount(event.target.checked)}
-                  />
-                  <span className="sf-checkout-choice-icon" aria-hidden="true">
-                    &#128100;
-                  </span>
-                  <span>
-                    <strong>Create my customer account</strong>
-                    <small>
-                      After payment, we&apos;ll email a secure activation link. Your
-                      order will already be connected to the account.
-                    </small>
-                  </span>
-                </label>
-              )}
-              <label className="sf-checkout-choice-card">
-                <input
-                  type="checkbox"
-                  checked={marketingOptIn}
-                  onChange={(event) => setMarketingOptIn(event.target.checked)}
-                />
-                <span className="sf-checkout-choice-icon" aria-hidden="true">
-                  &#9993;
-                </span>
-                <span>
-                  <strong>Send me news and offers</strong>
-                  <small>
-                    Latest News and Updates, New Arrivals, Promotions and
-                    Special Deals. You can change your preferences or
-                    unsubscribe anytime.
-                  </small>
-                </span>
-              </label>
-            </div>
           </fieldset>
           {method === "DELIVERY" && shipToDifferentRecipient && (
             <fieldset>
@@ -727,6 +766,66 @@ export function CheckoutContent() {
                     }
                   />
                 </label>
+              </div>
+            </fieldset>
+          )}
+          {(!signedIn || !newsletterSubscribed) && (
+            <fieldset className="sf-checkout-preferences">
+              <legend>Account and updates</legend>
+              <p>
+                Choose the optional services you would like with this order.
+              </p>
+              <div className="sf-checkout-preference-grid">
+                {!signedIn && recognition !== "guest" && (
+                  <label className="sf-checkout-choice-card">
+                    <input
+                      type="checkbox"
+                      checked={createAccount}
+                      onChange={(event) =>
+                        setCreateAccount(event.target.checked)
+                      }
+                    />
+                    <span
+                      className="sf-checkout-choice-icon"
+                      aria-hidden="true"
+                    >
+                      &#128100;
+                    </span>
+                    <span>
+                      <strong>Create my customer account</strong>
+                      <small>
+                        After payment, we&apos;ll email a secure activation
+                        link. After activation, this paid order will be
+                        connected to the new account.
+                      </small>
+                    </span>
+                  </label>
+                )}
+                {(!signedIn || !newsletterSubscribed) && (
+                  <label className="sf-checkout-choice-card">
+                    <input
+                      type="checkbox"
+                      checked={marketingOptIn}
+                      onChange={(event) =>
+                        setMarketingOptIn(event.target.checked)
+                      }
+                    />
+                    <span
+                      className="sf-checkout-choice-icon"
+                      aria-hidden="true"
+                    >
+                      &#9993;
+                    </span>
+                    <span>
+                      <strong>Send me news and offers</strong>
+                      <small>
+                        Latest News and Updates, New Arrivals, Promotions and
+                        Special Deals. You can change your preferences or
+                        unsubscribe anytime.
+                      </small>
+                    </span>
+                  </label>
+                )}
               </div>
             </fieldset>
           )}

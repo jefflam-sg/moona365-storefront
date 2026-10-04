@@ -1,5 +1,6 @@
 export type BrandAsset = { src: string; alt: string };
-export type WebsiteFont = "system-sans" | "open-sans" | "rubik" | "classic-serif" | "humanist-sans";
+export type WebsiteFont =
+  "system-sans" | "open-sans" | "rubik" | "classic-serif" | "humanist-sans";
 
 export type WebsiteDesign = {
   schemaVersion: 1;
@@ -74,8 +75,21 @@ export type WebsiteDesign = {
     navigation: "policies";
     showNewsletter: false;
     blocks?: Array<
-      | { id: string; type: "media"; width: 1 | 2; heading: string; image: BrandAsset | null; href: string }
-      | { id: string; type: "links"; width: 1 | 2; heading: string; links: Array<{ id: string; label: string; href: string }> }
+      | {
+          id: string;
+          type: "media";
+          width: 1 | 2;
+          heading: string;
+          image: BrandAsset | null;
+          href: string;
+        }
+      | {
+          id: string;
+          type: "links";
+          width: 1 | 2;
+          heading: string;
+          links: Array<{ id: string; label: string; href: string }>;
+        }
     >;
   };
 };
@@ -140,9 +154,34 @@ export type ServiceGroup = {
   }>;
 };
 
-export type ContentColumnMedia = { type: "image" | "video" | "youtube"; src: string; alt: string; videoId: string; title: string; placement: "top" | "bottom"; fit: "cover" | "contain" };
-export type ContentColumnPosition = "top-left" | "top-center" | "top-right" | "center-left" | "center" | "center-right" | "bottom-left" | "bottom-center" | "bottom-right";
-export type ContentColumn = { id: string; subject: string; lineWidth: "quarter" | "half" | "full"; body: string; cta: { text: string; href: string }; media: ContentColumnMedia | null; contentPosition?: ContentColumnPosition };
+export type ContentColumnMedia = {
+  type: "image" | "video" | "youtube";
+  src: string;
+  alt: string;
+  videoId: string;
+  title: string;
+  placement: "top" | "bottom";
+  fit: "cover" | "contain";
+};
+export type ContentColumnPosition =
+  | "top-left"
+  | "top-center"
+  | "top-right"
+  | "center-left"
+  | "center"
+  | "center-right"
+  | "bottom-left"
+  | "bottom-center"
+  | "bottom-right";
+export type ContentColumn = {
+  id: string;
+  subject: string;
+  lineWidth: "quarter" | "half" | "full";
+  body: string;
+  cta: { text: string; href: string };
+  media: ContentColumnMedia | null;
+  contentPosition?: ContentColumnPosition;
+};
 
 export type HomepageSection = {
   id: string;
@@ -165,34 +204,92 @@ export type HomepageSection = {
   tabs: Array<{ id: string; label: string; collectionId: string }>;
   items: SectionItem[];
   groups?: ServiceGroup[];
-  colors?: { background: string; panel: string; card: string; accent: string; text: string; mutedText: string };
+  colors?: {
+    background: string;
+    panel: string;
+    card: string;
+    accent: string;
+    text: string;
+    mutedText: string;
+  };
   columns?: ContentColumn[];
 };
 
-export type WebsiteCustomPage = { id: string; title: string; slug: string; status: "ACTIVE" | "ARCHIVED"; seo: { title: string; description: string; image: BrandAsset | null }; schemaVersion: 1; sections: HomepageSection[] };
+export type WebsiteCustomPage = {
+  id: string;
+  title: string;
+  slug: string;
+  status: "ACTIVE" | "ARCHIVED";
+  seo: { title: string; description: string; image: BrandAsset | null };
+  schemaVersion: 1;
+  sections: HomepageSection[];
+};
 
 export type StorefrontSnapshot = {
   contractVersion: 1;
   theme: { code: "retail-natural"; version: 1 };
   design: WebsiteDesign;
   homepage: { schemaVersion: 1; sections: HomepageSection[] };
-  pages?: { product: { schemaVersion: 1; sections: HomepageSection[] }; custom?: WebsiteCustomPage[] };
+  pages?: {
+    product: { schemaVersion: 1; sections: HomepageSection[] };
+    custom?: WebsiteCustomPage[];
+  };
   navigation?: WebsiteNavigation;
   cart?: { schemaVersion: 1; openBehavior: "AFTER_ADD" | "ON_CLICK" };
-  delivery?: { schemaVersion: 1; enabled: boolean; flatFee: string; freeShippingThreshold: string | null };
+  delivery?: {
+    schemaVersion: 1;
+    enabled: boolean;
+    flatFee: string;
+    freeShippingThreshold: string | null;
+  };
+  checkout?: { schemaVersion: 1; returningCustomerPromptEnabled: boolean };
 };
 
 export type NavigationDestination =
   | { type: "MENU_GROUP" }
   | { type: "SHOP_ALL" }
-  | { type: "PRODUCT_CATEGORY"; categoryId: string; includeSubcategories: boolean }
+  | {
+      type: "PRODUCT_CATEGORY";
+      categoryId: string;
+      includeSubcategories: boolean;
+    }
   | { type: "WEBSITE_COLLECTION"; collectionId: string }
   | { type: "PRODUCT"; productId: string }
   | { type: "CUSTOM_PAGE"; pageId: string }
-  | { type: "SYSTEM_PAGE"; page: "HOME" | "SHOP" | "CATEGORIES" | "COLLECTIONS" }
+  | {
+      type: "SYSTEM_PAGE";
+      page: "HOME" | "SHOP" | "CATEGORIES" | "COLLECTIONS";
+    }
   | { type: "CUSTOM_URL"; url: string };
-export type NavigationNode = { id: string; parentId: string | null; position: number; visible: boolean; labelOverride: string | null; destination: NavigationDestination; presentation: "LINK" | "DROPDOWN" | "MEGA_MENU"; automaticChildren: null | { scope: "CHILDREN_OF_CATEGORY" | "ALL_TOP_LEVEL"; maxDepth: 1 | 2 }; megaMenu: null | { columns: 3 | 4 | 5; promo: null | { heading: string; text: string; image: BrandAsset | null; destination: NavigationDestination } } };
-export type WebsiteNavigation = { schemaVersion: 1; menus: { main: { id: "main"; nodes: NavigationNode[] }; footer: { id: "footer"; nodes: NavigationNode[] } } };
+export type NavigationNode = {
+  id: string;
+  parentId: string | null;
+  position: number;
+  visible: boolean;
+  labelOverride: string | null;
+  destination: NavigationDestination;
+  presentation: "LINK" | "DROPDOWN" | "MEGA_MENU";
+  automaticChildren: null | {
+    scope: "CHILDREN_OF_CATEGORY" | "ALL_TOP_LEVEL";
+    maxDepth: 1 | 2;
+  };
+  megaMenu: null | {
+    columns: 3 | 4 | 5;
+    promo: null | {
+      heading: string;
+      text: string;
+      image: BrandAsset | null;
+      destination: NavigationDestination;
+    };
+  };
+};
+export type WebsiteNavigation = {
+  schemaVersion: 1;
+  menus: {
+    main: { id: "main"; nodes: NavigationNode[] };
+    footer: { id: "footer"; nodes: NavigationNode[] };
+  };
+};
 
 export type PublicCollection = {
   id: string;
@@ -265,8 +362,16 @@ export type PublicProductListing = {
   siteId: string;
   calculatedAt: string;
   products: PublicProduct[];
-  pagination: { page: number; pageSize: number; total: number; pageCount: number };
-  facets: Array<{ key: string; values: Array<{ value: string; label: string; count: number }> }>;
+  pagination: {
+    page: number;
+    pageSize: number;
+    total: number;
+    pageCount: number;
+  };
+  facets: Array<{
+    key: string;
+    values: Array<{ value: string; label: string; count: number }>;
+  }>;
 };
 export type PublicFilterConfiguration = {
   apiVersion: 1;
@@ -282,9 +387,21 @@ export type PublicFilterConfiguration = {
     requestedScopeId?: string | null;
     items: Array<{
       key: string;
-      sourceType: "CATEGORY" | "ATTRIBUTE" | "SPECIFICATION" | "BRAND" | "PRICE" | "IN_STOCK";
+      sourceType:
+        | "CATEGORY"
+        | "ATTRIBUTE"
+        | "SPECIFICATION"
+        | "BRAND"
+        | "PRICE"
+        | "IN_STOCK";
       customerLabel: string;
-      presentation: "CHECKBOX" | "CHIP" | "IMAGE" | "COLOR_SWATCH" | "PRICE_RANGE" | "BINARY_TOGGLE";
+      presentation:
+        | "CHECKBOX"
+        | "CHIP"
+        | "IMAGE"
+        | "COLOR_SWATCH"
+        | "PRICE_RANGE"
+        | "BINARY_TOGGLE";
       multipleSelection: boolean;
       showProductCount: boolean;
       maxInitiallyVisible: number;

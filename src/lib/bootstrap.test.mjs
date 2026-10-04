@@ -22,9 +22,7 @@ const responseFor = (host, siteId) => ({
     design: {},
     homepage: {
       schemaVersion: 1,
-      sections: [
-        { id: "hero", type: "hero", version: 1, visible: true },
-      ],
+      sections: [{ id: "hero", type: "hero", version: 1, visible: true }],
     },
   },
 });
@@ -34,7 +32,10 @@ test("normalizes DNS hosts and rejects local or malformed hosts", () => {
     normalizeRequestedHost(" Shop.Example.com:443. "),
     "shop.example.com",
   );
-  assert.equal(normalizeRequestedHost("Shop.Example.com:443"), "shop.example.com");
+  assert.equal(
+    normalizeRequestedHost("Shop.Example.com:443"),
+    "shop.example.com",
+  );
   for (const host of ["localhost", "127.0.0.1", "bad/path.com", "-bad.com"])
     assert.equal(normalizeRequestedHost(host), null);
 });
@@ -64,7 +65,10 @@ test("keeps tenant bootstrap responses isolated by the verified requested host",
 
 test("rejects a response for another tenant and any private extra field", () => {
   assert.equal(
-    isPublicBootstrap(responseFor("beta.example.com", "site-b"), "alpha.example.com"),
+    isPublicBootstrap(
+      responseFor("beta.example.com", "site-b"),
+      "alpha.example.com",
+    ),
     false,
   );
   assert.equal(
@@ -94,16 +98,45 @@ test("accepts bounded cart behavior and rejects unknown cart settings", () => {
 
 test("accepts bounded delivery settings and rejects malformed thresholds", () => {
   const response = responseFor("alpha.example.com", "site-a");
-  response.snapshot.delivery = { schemaVersion: 1, enabled: true, flatFee: "5.00", freeShippingThreshold: "50.00" };
+  response.snapshot.delivery = {
+    schemaVersion: 1,
+    enabled: true,
+    flatFee: "5.00",
+    freeShippingThreshold: "50.00",
+  };
   assert.equal(isPublicBootstrap(response, "alpha.example.com"), true);
   response.snapshot.delivery.freeShippingThreshold = "0.00";
   assert.equal(isPublicBootstrap(response, "alpha.example.com"), false);
 });
 
+test("accepts only the bounded checkout recognition setting", () => {
+  const response = responseFor("alpha.example.com", "site-a");
+  response.snapshot.checkout = {
+    schemaVersion: 1,
+    returningCustomerPromptEnabled: true,
+  };
+  assert.equal(isPublicBootstrap(response, "alpha.example.com"), true);
+  response.snapshot.checkout.revealAccountStatus = true;
+  assert.equal(isPublicBootstrap(response, "alpha.example.com"), false);
+});
+
 test("accepts bounded custom pages and rejects duplicate page slugs", () => {
   const response = responseFor("alpha.example.com", "site-a");
-  const page = { id: "about", title: "About us", slug: "about-us", status: "ACTIVE", seo: { title: "", description: "", image: null }, schemaVersion: 1, sections: [{ id: "story", type: "content-columns", version: 1, visible: true }] };
-  response.snapshot.pages = { product: { schemaVersion: 1, sections: [] }, custom: [page] };
+  const page = {
+    id: "about",
+    title: "About us",
+    slug: "about-us",
+    status: "ACTIVE",
+    seo: { title: "", description: "", image: null },
+    schemaVersion: 1,
+    sections: [
+      { id: "story", type: "content-columns", version: 1, visible: true },
+    ],
+  };
+  response.snapshot.pages = {
+    product: { schemaVersion: 1, sections: [] },
+    custom: [page],
+  };
   assert.equal(isPublicBootstrap(response, "alpha.example.com"), true);
   response.snapshot.pages.custom.push({ ...page, id: "copy" });
   assert.equal(isPublicBootstrap(response, "alpha.example.com"), false);
@@ -134,7 +167,13 @@ test("accepts only non-commerce preview snapshots and posts the token in a body"
     },
   });
   assert.equal(result.siteId, "site-a");
-  assert.equal(request.url, "https://api.example.com/public/storefront/v1/preview");
+  assert.equal(
+    request.url,
+    "https://api.example.com/public/storefront/v1/preview",
+  );
   assert.deepEqual(JSON.parse(request.init.body), { token: "x".repeat(64) });
-  assert.equal(isPreviewBootstrap({ ...preview, commerceEnabled: true }), false);
+  assert.equal(
+    isPreviewBootstrap({ ...preview, commerceEnabled: true }),
+    false,
+  );
 });

@@ -3,6 +3,7 @@ import { storefrontProxyHeaders } from "@/lib/storefront-proxy";
 
 const CART_COOKIE = "moona365_cart";
 const CHECKOUT_COOKIE = "moona365_checkout";
+const CUSTOMER_COOKIE = "moona365_customer";
 const hostOf = (request: Request) =>
   (request.headers.get("x-forwarded-host") ?? request.headers.get("host") ?? "")
     .split(",")[0]
@@ -20,6 +21,7 @@ export async function POST(request: Request) {
   const base = api();
   const host = hostOf(request);
   const cartToken = cookie(request, CART_COOKIE);
+  const customerSessionToken = cookie(request, CUSTOMER_COOKIE);
   if (!base || !host || !cartToken)
     return NextResponse.json(
       { message: "Checkout is unavailable." },
@@ -64,6 +66,9 @@ export async function POST(request: Request) {
           ...body,
           host,
           cartToken: decodeURIComponent(cartToken),
+          customerSessionToken: customerSessionToken
+            ? decodeURIComponent(customerSessionToken)
+            : null,
         }),
       },
     );

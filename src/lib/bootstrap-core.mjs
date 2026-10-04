@@ -12,7 +12,14 @@ const bootstrapKeys = [
   "snapshot",
 ];
 const legacySnapshotKeys = ["contractVersion", "theme", "design", "homepage"];
-const snapshotKeys = [...legacySnapshotKeys, "pages", "navigation", "cart", "delivery"];
+const snapshotKeys = [
+  ...legacySnapshotKeys,
+  "pages",
+  "navigation",
+  "cart",
+  "delivery",
+  "checkout",
+];
 const registeredBlocks = new Set([
   "hero",
   "categories",
@@ -79,40 +86,132 @@ function isSnapshotEnvelope(value) {
     value.homepage.schemaVersion !== 1 ||
     !Array.isArray(value.homepage.sections) ||
     value.homepage.sections.length > 20 ||
-    (value.pages !== undefined && (!isRecord(value.pages) || !(["product"].every((key) => Object.hasOwn(value.pages, key)) && Object.keys(value.pages).every((key) => ["product", "custom"].includes(key))) || !isRecord(value.pages.product) || !hasExactKeys(value.pages.product, ["schemaVersion", "sections"]) || value.pages.product.schemaVersion !== 1 || !Array.isArray(value.pages.product.sections) || value.pages.product.sections.length > 20 || (value.pages.custom !== undefined && (!Array.isArray(value.pages.custom) || value.pages.custom.length > 30)))) ||
-    (value.cart !== undefined && (!isRecord(value.cart) || !hasExactKeys(value.cart, ["schemaVersion", "openBehavior"]) || value.cart.schemaVersion !== 1 || !["AFTER_ADD", "ON_CLICK"].includes(value.cart.openBehavior))) ||
-    (value.delivery !== undefined && (!isRecord(value.delivery) || !hasExactKeys(value.delivery, ["schemaVersion", "enabled", "flatFee", "freeShippingThreshold"]) || value.delivery.schemaVersion !== 1 || typeof value.delivery.enabled !== "boolean" || !/^(0|[1-9]\d{0,7})(?:\.\d{1,2})?$/.test(value.delivery.flatFee) || (value.delivery.freeShippingThreshold !== null && (!/^(0|[1-9]\d{0,7})(?:\.\d{1,2})?$/.test(value.delivery.freeShippingThreshold) || Number(value.delivery.freeShippingThreshold) <= 0))))
+    (value.pages !== undefined &&
+      (!isRecord(value.pages) ||
+        !(
+          ["product"].every((key) => Object.hasOwn(value.pages, key)) &&
+          Object.keys(value.pages).every((key) =>
+            ["product", "custom"].includes(key),
+          )
+        ) ||
+        !isRecord(value.pages.product) ||
+        !hasExactKeys(value.pages.product, ["schemaVersion", "sections"]) ||
+        value.pages.product.schemaVersion !== 1 ||
+        !Array.isArray(value.pages.product.sections) ||
+        value.pages.product.sections.length > 20 ||
+        (value.pages.custom !== undefined &&
+          (!Array.isArray(value.pages.custom) ||
+            value.pages.custom.length > 30)))) ||
+    (value.cart !== undefined &&
+      (!isRecord(value.cart) ||
+        !hasExactKeys(value.cart, ["schemaVersion", "openBehavior"]) ||
+        value.cart.schemaVersion !== 1 ||
+        !["AFTER_ADD", "ON_CLICK"].includes(value.cart.openBehavior))) ||
+    (value.delivery !== undefined &&
+      (!isRecord(value.delivery) ||
+        !hasExactKeys(value.delivery, [
+          "schemaVersion",
+          "enabled",
+          "flatFee",
+          "freeShippingThreshold",
+        ]) ||
+        value.delivery.schemaVersion !== 1 ||
+        typeof value.delivery.enabled !== "boolean" ||
+        !/^(0|[1-9]\d{0,7})(?:\.\d{1,2})?$/.test(value.delivery.flatFee) ||
+        (value.delivery.freeShippingThreshold !== null &&
+          (!/^(0|[1-9]\d{0,7})(?:\.\d{1,2})?$/.test(
+            value.delivery.freeShippingThreshold,
+          ) ||
+            Number(value.delivery.freeShippingThreshold) <= 0)))) ||
+    (value.checkout !== undefined &&
+      (!isRecord(value.checkout) ||
+        !hasExactKeys(value.checkout, [
+          "schemaVersion",
+          "returningCustomerPromptEnabled",
+        ]) ||
+        value.checkout.schemaVersion !== 1 ||
+        typeof value.checkout.returningCustomerPromptEnabled !== "boolean"))
   )
     return false;
 
   const validSections = (sections) => {
     const ids = new Set();
     return sections.every((section) => {
-    if (
-      !isRecord(section) ||
-      typeof section.id !== "string" ||
-      !section.id ||
-      ids.has(section.id) ||
-      typeof section.type !== "string" ||
-      !registeredBlocks.has(section.type) ||
-      section.version !== 1 ||
-      typeof section.visible !== "boolean"
-    )
-      return false;
-    ids.add(section.id);
-    return true;
+      if (
+        !isRecord(section) ||
+        typeof section.id !== "string" ||
+        !section.id ||
+        ids.has(section.id) ||
+        typeof section.type !== "string" ||
+        !registeredBlocks.has(section.type) ||
+        section.version !== 1 ||
+        typeof section.visible !== "boolean"
+      )
+        return false;
+      ids.add(section.id);
+      return true;
     });
   };
   const customPages = value.pages?.custom ?? [];
   const pageIds = new Set();
   const pageSlugs = new Set();
   const validPages = customPages.every((page) => {
-    if (!isRecord(page) || !hasExactKeys(page, ["id", "title", "slug", "status", "seo", "schemaVersion", "sections"]) || typeof page.id !== "string" || !page.id || page.id.length > 80 || pageIds.has(page.id) || typeof page.title !== "string" || !page.title.trim() || page.title.length > 120 || typeof page.slug !== "string" || page.slug.length > 120 || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(page.slug) || pageSlugs.has(page.slug) || !["ACTIVE", "ARCHIVED"].includes(page.status) || page.schemaVersion !== 1 || !Array.isArray(page.sections) || page.sections.length > 20 || !validSections(page.sections) || !isRecord(page.seo) || !hasExactKeys(page.seo, ["title", "description", "image"]) || typeof page.seo.title !== "string" || page.seo.title.length > 70 || typeof page.seo.description !== "string" || page.seo.description.length > 320) return false;
+    if (
+      !isRecord(page) ||
+      !hasExactKeys(page, [
+        "id",
+        "title",
+        "slug",
+        "status",
+        "seo",
+        "schemaVersion",
+        "sections",
+      ]) ||
+      typeof page.id !== "string" ||
+      !page.id ||
+      page.id.length > 80 ||
+      pageIds.has(page.id) ||
+      typeof page.title !== "string" ||
+      !page.title.trim() ||
+      page.title.length > 120 ||
+      typeof page.slug !== "string" ||
+      page.slug.length > 120 ||
+      !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(page.slug) ||
+      pageSlugs.has(page.slug) ||
+      !["ACTIVE", "ARCHIVED"].includes(page.status) ||
+      page.schemaVersion !== 1 ||
+      !Array.isArray(page.sections) ||
+      page.sections.length > 20 ||
+      !validSections(page.sections) ||
+      !isRecord(page.seo) ||
+      !hasExactKeys(page.seo, ["title", "description", "image"]) ||
+      typeof page.seo.title !== "string" ||
+      page.seo.title.length > 70 ||
+      typeof page.seo.description !== "string" ||
+      page.seo.description.length > 320
+    )
+      return false;
     const image = page.seo.image;
-    if (image !== null && (!isRecord(image) || !hasExactKeys(image, ["src", "alt"]) || typeof image.src !== "string" || !image.src || image.src.length > 750000 || typeof image.alt !== "string" || image.alt.length > 120)) return false;
-    pageIds.add(page.id); pageSlugs.add(page.slug); return true;
+    if (
+      image !== null &&
+      (!isRecord(image) ||
+        !hasExactKeys(image, ["src", "alt"]) ||
+        typeof image.src !== "string" ||
+        !image.src ||
+        image.src.length > 750000 ||
+        typeof image.alt !== "string" ||
+        image.alt.length > 120)
+    )
+      return false;
+    pageIds.add(page.id);
+    pageSlugs.add(page.slug);
+    return true;
   });
-  return validSections(value.homepage.sections) && (value.pages === undefined || validSections(value.pages.product.sections) && validPages);
+  return (
+    validSections(value.homepage.sections) &&
+    (value.pages === undefined ||
+      (validSections(value.pages.product.sections) && validPages))
+  );
 }
 
 export function isPublicBootstrap(value, requestedHost) {
@@ -183,12 +282,16 @@ export async function exchangePreviewToken(token, options = {}) {
     {
       method: "POST",
       cache: "no-store",
-      headers: { Accept: "application/json", "Content-Type": "application/json" },
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify({ token }),
     },
   );
   if (response.status === 404 || response.status === 410) return null;
-  if (!response.ok) throw new Error(`Preview exchange failed (${response.status})`);
+  if (!response.ok)
+    throw new Error(`Preview exchange failed (${response.status})`);
   const value = await response.json();
   if (!isPreviewBootstrap(value))
     throw new Error("Invalid or unsupported preview contract");
