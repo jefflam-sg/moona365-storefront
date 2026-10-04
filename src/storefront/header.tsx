@@ -17,7 +17,7 @@ export function StorefrontBrand({ design, preview = false }: { design: WebsiteDe
   const logoSource = logo ? safeImageSource(logo.src) : null;
   const content = logoSource
     ? <img className="sf-logo" src={logoSource} alt={logo?.alt || brand.name} />
-    : <strong className="sf-wordmark">{brand.name}<span aria-hidden="true">•</span></strong>;
+    : <strong className="sf-wordmark">{brand.name}<span aria-hidden="true">â€¢</span></strong>;
   return <Link className="sf-brand-home" href="/" aria-label={`${brand.name} homepage`} onClick={preview ? (event) => event.preventDefault() : undefined}>{content}</Link>;
 }
 
@@ -79,7 +79,7 @@ export function StorefrontHeader({ design, preview, navigation, cart, pages = []
         </li>;
       })}</ul></nav>
       <div className="sf-tools" aria-label="Store tools">
-        <button type="button" disabled={preview} aria-label="Account"><StorefrontIcon name="account" /></button>
+        {preview ? <button type="button" disabled aria-label="Account"><StorefrontIcon name="account" /></button> : <Link href="/account" aria-label="Account"><StorefrontIcon name="account" /></Link>}
         <button type="button" disabled={preview} aria-label={`Cart, ${cartItems} item${cartItems === 1 ? "" : "s"}`} onClick={() => window.dispatchEvent(new CustomEvent(CART_OPEN_EVENT))}><StorefrontIcon name="cart" /><sup>{cartItems}</sup></button>
       </div>
     </div>
