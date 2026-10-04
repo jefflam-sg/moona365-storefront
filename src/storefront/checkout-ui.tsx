@@ -11,6 +11,7 @@ import {
 } from "@stripe/react-stripe-js";
 import { loadStripe, Stripe } from "@stripe/stripe-js";
 import { WebsiteCart, loadCart, setCartNote } from "./commerce-local";
+import { CustomerLogin } from "./customer-login";
 
 const price = (amount: string, currency: string) =>
   new Intl.NumberFormat("en-SG", { style: "currency", currency }).format(
@@ -28,6 +29,12 @@ type CheckoutBreakdown = {
   deliveryGst: string;
   gstTotal: string;
   grandTotal: string;
+  rewards?: {
+    walletBalance: string;
+    cashbackRatePct: string;
+    estimatedCashback: string;
+    earnedCashback: string | null;
+  } | null;
 };
 type BeginResult = {
   publishableKey: string;
@@ -116,6 +123,7 @@ export function CheckoutContent() {
   const [marketingOptIn, setMarketingOptIn] = useState(false);
   const [createAccount, setCreateAccount] = useState(false);
   const [signedIn, setSignedIn] = useState(false);
+  const [loginOpen, setLoginOpen] = useState(false);
   const [newsletterSubscribed, setNewsletterSubscribed] = useState(false);
   const [recognition, setRecognition] = useState<
     "idle" | "checking" | "none" | "prompt" | "guest"
@@ -156,33 +164,33 @@ export function CheckoutContent() {
         ),
       );
   }, []);
+  async function refreshCustomerSession() {
+    const response = await fetch("/api/account/session", { cache: "no-store" });
+    if (!response.ok) return;
+    const session = await response.json();
+    const customer = session?.customer;
+    if (!customer) return;
+    setSignedIn(true);
+    setRecognition("none");
+    setCreateAccount(false);
+    setNewsletterSubscribed(session.newsletterSubscribed === true);
+    setFirstName(customer.firstName || "");
+    setLastName(customer.lastName || "");
+    setCompanyName(customer.companyName || "");
+    setEmail(customer.email || "");
+    const countryCode = customer.phoneCountryCode || "+65";
+    setPhoneCountryCode(countryCode);
+    setPhone(String(customer.phone || "").replace(countryCode, ""));
+    const address = customer.defaultAddress;
+    if (address) {
+      setLine1(address.line1 || "");
+      setLine2(address.line2 || "");
+      setCity(address.city || "");
+      setPostal(address.postalCode || "");
+    }
+  }
   useEffect(() => {
-    void fetch("/api/account/session", { cache: "no-store" })
-      .then(async (response) => (response.ok ? await response.json() : null))
-      .then((session) => {
-        const customer = session?.customer;
-        if (!customer) return;
-        setSignedIn(true);
-        setNewsletterSubscribed(session.newsletterSubscribed === true);
-        setFirstName((current) => current || customer.firstName || "");
-        setLastName((current) => current || customer.lastName || "");
-        setCompanyName((current) => current || customer.companyName || "");
-        setEmail((current) => current || customer.email || "");
-        const countryCode = customer.phoneCountryCode || "+65";
-        setPhoneCountryCode(countryCode);
-        setPhone(
-          (current) =>
-            current || String(customer.phone || "").replace(countryCode, ""),
-        );
-        const address = customer.defaultAddress;
-        if (address) {
-          setLine1((current) => current || address.line1 || "");
-          setLine2((current) => current || address.line2 || "");
-          setCity((current) => current || address.city || "");
-          setPostal((current) => current || address.postalCode || "");
-        }
-      })
-      .catch(() => undefined);
+    void refreshCustomerSession().catch(() => undefined);
   }, []);
   const options = useMemo(
     () =>
@@ -301,6 +309,12 @@ export function CheckoutContent() {
         setRecognizedEmail(email.trim().toLowerCase());
         setCreateAccount(false);
       }
+      if (
+        !response.ok &&
+        value?.details?.reason === "CUSTOMER_SESSION_EXPIRED"
+      ) {
+        setLoginOpen(true);
+      }
       if (!response.ok)
         throw new Error(value.message ?? "Checkout could not be started.");
       setResult(value);
@@ -343,6 +357,23 @@ export function CheckoutContent() {
 
   return (
     <section className="sf-checkout-page">
+      {loginOpen && (
+        <CustomerLogin
+          mode="CHECKOUT_MODAL"
+          defaultEmail={email}
+          onClose={() => setLoginOpen(false)}
+          onGuest={async () => {
+            await fetch("/api/account/session", { method: "DELETE" }).catch(
+              () => undefined,
+            );
+            setSignedIn(false);
+            setRecognition("guest");
+            setCreateAccount(false);
+            setLoginOpen(false);
+          }}
+          onSuccess={refreshCustomerSession}
+        />
+      )}
       <CheckoutProgress step={1} />
       <div className="sf-checkout-heading">
         <div>
@@ -376,9 +407,9 @@ export function CheckoutContent() {
             {signedIn ? (
               <Link href="/account">View account</Link>
             ) : (
-              <Link href="/account/login?returnTo=/checkout">
+              <button type="button" onClick={() => setLoginOpen(true)}>
                 Click here to log in
-              </Link>
+              </button>
             )}
           </div>
           <fieldset>
@@ -431,7 +462,9 @@ export function CheckoutContent() {
                   </small>
                 </span>
                 <span>
-                  <Link href="/account/login?returnTo=/checkout">Sign in</Link>
+                  <button type="button" onClick={() => setLoginOpen(true)}>
+                    Sign in
+                  </button>
                   <button
                     type="button"
                     onClick={() => {
@@ -980,6 +1013,18 @@ function CheckoutSummary({
         <strong>{checkout ? "Total" : "Estimated total"}</strong>
         <strong>{price(grandTotal, cart.currency)}</strong>
       </div>
+      {checkout?.rewards && Number(checkout.rewards.estimatedCashback) > 0 && (
+        <div className="sf-checkout-reward">
+          <strong>
+            Earn {price(checkout.rewards.estimatedCashback, cart.currency)}{" "}
+            cashback
+          </strong>
+          <small>
+            Current wallet balance:{" "}
+            {price(checkout.rewards.walletBalance, cart.currency)}
+          </small>
+        </div>
+      )}
     </aside>
   );
 }
@@ -993,6 +1038,7 @@ export function CheckoutConfirmation() {
       fulfillmentMethod: string;
       confirmationEmailStatus: string;
       accountInvitationStatus?: string;
+      rewards?: CheckoutBreakdown["rewards"];
       failureMessage?: string | null;
     } | null>(null),
     [error, setError] = useState("");
@@ -1078,6 +1124,13 @@ export function CheckoutConfirmation() {
             <dt>Order reference</dt>
             <dd>{state.id}</dd>
           </div>
+          {state.rewards?.earnedCashback &&
+            Number(state.rewards.earnedCashback) > 0 && (
+              <div>
+                <dt>Cashback earned</dt>
+                <dd>{price(state.rewards.earnedCashback, state.currency)}</dd>
+              </div>
+            )}
           <div>
             <dt>Total</dt>
             <dd>{price(state.total, state.currency)}</dd>

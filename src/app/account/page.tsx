@@ -5,6 +5,11 @@ import { useRouter } from "next/navigation";
 
 type AccountData = {
   customer: { name: string; email: string };
+  membership: {
+    memberCode: string;
+    walletBalance: string;
+    walletCurrency: string;
+  };
   orders: Array<{
     id: string;
     invoiceNumber: number;
@@ -12,6 +17,7 @@ type AccountData = {
     total: string;
     currency: string;
     status: string;
+    cashbackEarned: string | null;
   }>;
 };
 
@@ -55,6 +61,21 @@ export default function CustomerAccountPage() {
       {message && <p role="status">{message}</p>}
       {data && (
         <section>
+          <div className="sf-account-membership">
+            <span>
+              <small>Member</small>
+              <strong>{data.membership.memberCode}</strong>
+            </span>
+            <span>
+              <small>Cashback balance</small>
+              <strong>
+                {new Intl.NumberFormat("en-SG", {
+                  style: "currency",
+                  currency: data.membership.walletCurrency,
+                }).format(Number(data.membership.walletBalance))}
+              </strong>
+            </span>
+          </div>
           <h2>Website orders</h2>
           {data.orders.length === 0 ? (
             <p>No website orders yet.</p>
@@ -74,6 +95,15 @@ export default function CustomerAccountPage() {
                       }).format(Number(order.total))}
                     </strong>
                     <small>{order.status}</small>
+                    {Number(order.cashbackEarned ?? "0") > 0 && (
+                      <small>
+                        Cashback +
+                        {new Intl.NumberFormat("en-SG", {
+                          style: "currency",
+                          currency: order.currency,
+                        }).format(Number(order.cashbackEarned))}
+                      </small>
+                    )}
                   </span>
                 </article>
               ))}
