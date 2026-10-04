@@ -31,8 +31,7 @@ export default function RegisterPage() {
     }
   }
   return (
-    <main className="sf-width sf-account-activation">
-      <span className="sf-eyebrow">CUSTOMER ACCOUNT</span>
+    <section className="sf-width sf-account-activation">
       <h1>Create an account</h1>
       <p>Your verified account uses the same membership in store and online.</p>
       <form onSubmit={submit}>
@@ -66,6 +65,6 @@ export default function RegisterPage() {
         </small>
         <Link href="/account/login">Already have an account? Sign in</Link>
       </form>
-    </main>
+    </section>
   );
 }

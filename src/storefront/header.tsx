@@ -1,7 +1,7 @@
 "use client";
 /* eslint-disable @next/next/no-img-element -- URLs are tenant content validated by the backend contract. */
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import type { HomepageCatalogue, StorefrontSnapshot, WebsiteCustomPage, WebsiteDesign, WebsiteNavigation } from "./contracts";
 import { StorefrontIcon } from "./icons";
@@ -10,6 +10,7 @@ import { safeImageSource } from "./safe-values";
 import { CART_EVENT, CART_OPEN_EVENT, cartCount, configureCart, loadCart } from "./commerce-local";
 import { CartDrawer } from "./cart-ui";
 import { LiveProductSearch } from "./live-product-search";
+import { CustomerLogin } from "./customer-login";
 
 export function StorefrontBrand({ design, preview = false }: { design: WebsiteDesign; preview?: boolean }) {
   const { brand } = design;
@@ -37,9 +38,12 @@ export function StorefrontHeader({ design, preview, navigation, cart, pages = []
   const { header } = design;
   const items = resolveNavigation("main", navigation, catalogue, pages);
   const pathname = usePathname();
+  const router = useRouter();
   const [open, setOpen] = useState<string | null>(null);
   const [mobile, setMobile] = useState(false);
   const [cartItems, setCartItems] = useState(0);
+  const [accountOpen, setAccountOpen] = useState(false);
+  const [accountBusy, setAccountBusy] = useState(false);
   const root = useRef<HTMLElement>(null);
 
   useEffect(() => {
@@ -60,6 +64,23 @@ export function StorefrontHeader({ design, preview, navigation, cart, pages = []
 
   const nested = (children: ResolvedNavigationNode[]) => <ul>{children.map((child) => <li key={child.id}><NavLink item={child} preview={preview} />{child.children.length > 0 && nested(child.children)}</li>)}</ul>;
 
+  const openAccount = async () => {
+    if (preview || accountBusy) return;
+    setAccountBusy(true);
+    try {
+      const response = await fetch("/api/account/session", { cache: "no-store" });
+      if (response.ok) {
+        router.push("/account");
+        return;
+      }
+      setAccountOpen(true);
+    } catch {
+      setAccountOpen(true);
+    } finally {
+      setAccountBusy(false);
+    }
+  };
+
   return <><header ref={root} className="sf-header" data-sticky={header.sticky} data-position={header.logoPosition} data-style={header.style}>
     {header.showAnnouncement && <div className="sf-announcement">{header.announcement}</div>}
     <div className="sf-header-main sf-width">
@@ -79,9 +100,9 @@ export function StorefrontHeader({ design, preview, navigation, cart, pages = []
         </li>;
       })}</ul></nav>
       <div className="sf-tools" aria-label="Store tools">
-        {preview ? <button type="button" disabled aria-label="Account"><StorefrontIcon name="account" /></button> : <Link href="/account" aria-label="Account"><StorefrontIcon name="account" /></Link>}
+        <button type="button" disabled={preview || accountBusy} aria-label={accountBusy ? "Checking customer account" : "Account"} onClick={() => void openAccount()}><StorefrontIcon name="account" /></button>
         <button type="button" disabled={preview} aria-label={`Cart, ${cartItems} item${cartItems === 1 ? "" : "s"}`} onClick={() => window.dispatchEvent(new CustomEvent(CART_OPEN_EVENT))}><StorefrontIcon name="cart" /><sup>{cartItems}</sup></button>
       </div>
     </div>
-  </header>{!preview && <CartDrawer />}</>;
+  </header>{!preview && <CartDrawer />}{accountOpen && <CustomerLogin mode="STORE_MODAL" onClose={() => setAccountOpen(false)} onSuccess={() => router.refresh()} />}</>;
 }

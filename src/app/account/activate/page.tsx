@@ -68,8 +68,7 @@ function AccountActivationContent() {
   }
 
   return (
-    <main className="sf-width sf-account-activation">
-      <span className="sf-eyebrow">CUSTOMER ACCOUNT</span>
+    <section className="sf-width sf-account-activation">
       <h1>Activate your account</h1>
       {organization && <p>Complete your account for {organization}.</p>}
       {message && <p role="status">{message}</p>}
@@ -112,13 +111,15 @@ function AccountActivationContent() {
         </form>
       )}
       {activated && <Link href="/account">View your account</Link>}
-    </main>
+    </section>
   );
 }
 
 export default function AccountActivationPage() {
   return (
-    <Suspense fallback={<main className="sf-width">Checking your link…</main>}>
+    <Suspense
+      fallback={<section className="sf-width">Checking your link…</section>}
+    >
       <AccountActivationContent />
     </Suspense>
   );

@@ -1,0 +1,110 @@
+/* Customer authentication uses the published storefront button system. */
+.sf-login-backdrop {
+  background: rgb(9 25 28 / 58%);
+}
+
+.sf-login-card--modal {
+  width: min(100%, 460px);
+}
+
+.sf-login-card h1 {
+  padding-right: 36px;
+}
+
+.sf-login-submit,
+.sf-login-secondary {
+  border-radius: var(--retail-button-radius, 8px);
+  font-weight: var(--retail-button-weight, 700);
+}
+
+.sf-login-submit {
+  color: var(--retail-button-primaryText, #fff);
+  background: var(
+    --retail-button-primaryBackground,
+    var(--retail-primary, #14664f)
+  );
+  border-color: var(
+    --retail-button-primaryBorder,
+    var(--retail-primary, #14664f)
+  );
+}
+
+.sf-login-submit:is(:hover, :focus-visible) {
+  color: var(--retail-button-primaryHoverText, #fff);
+  background: var(
+    --retail-button-primaryHoverBackground,
+    var(--retail-primary, #14664f)
+  );
+  border-color: var(
+    --retail-button-primaryHoverBackground,
+    var(--retail-primary, #14664f)
+  );
+}
+
+.sf-login-secondary {
+  color: var(--retail-button-secondaryText, var(--retail-primary, #14664f));
+  background: var(--retail-button-secondaryBackground, #fff);
+  border-color: var(
+    --retail-button-secondaryBorder,
+    var(--retail-primary, #14664f)
+  );
+}
+
+.sf-login-secondary:is(:hover, :focus-visible) {
+  color: var(--retail-button-secondaryHoverText, #fff);
+  background: var(
+    --retail-button-secondaryHoverBackground,
+    var(--retail-primary, #14664f)
+  );
+  border-color: var(
+    --retail-button-secondaryHoverBackground,
+    var(--retail-primary, #14664f)
+  );
+}
+
+.sf-login-link {
+  justify-self: end;
+  padding: 0;
+  color: var(--retail-primary, #14664f);
+  background: transparent;
+  border: 0;
+  font: inherit;
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.sf-login-link--back {
+  justify-self: center;
+  margin-top: 2px;
+}
+
+.sf-login-status {
+  margin: 0 !important;
+  padding: 11px 13px;
+  color: var(--retail-text, #122d2f) !important;
+  background: color-mix(in srgb, var(--retail-primary, #14664f) 8%, #fff);
+  border: 1px solid
+    color-mix(
+      in srgb,
+      var(--retail-primary, #14664f) 22%,
+      var(--retail-border, #dde3df)
+    );
+  border-radius: 8px;
+  line-height: 1.45;
+}
+
+.sf-login-secondary + .sf-login-new {
+  margin-top: 18px;
+}
+
+@media (max-width: 760px) {
+  .sf-login-card--modal {
+    min-height: 0;
+  }
+
+  .sf-login-backdrop {
+    background: rgb(9 25 28 / 52%);
+  }
+}

@@ -1,31 +1,37 @@
 "use client";
 
-import Link from "next/link";
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
+type ModalProps = {
+  defaultEmail?: string;
+  onClose: () => void;
+  onSuccess: () => void | Promise<void>;
+};
+
 type Props =
   | { mode: "PAGE" }
-  | {
+  | ({ mode: "STORE_MODAL" } & ModalProps)
+  | ({
       mode: "CHECKOUT_MODAL";
-      defaultEmail?: string;
-      onClose: () => void;
       onGuest: () => void | Promise<void>;
-      onSuccess: () => void | Promise<void>;
-    };
+    } & ModalProps);
+
+type View = "SIGN_IN" | "REGISTER" | "FORGOT_PASSWORD";
 
 export function CustomerLogin(props: Props) {
   const router = useRouter();
   const panel = useRef<HTMLDivElement>(null);
-  const [email, setEmail] = useState(
-    props.mode === "CHECKOUT_MODAL" ? (props.defaultEmail ?? "") : "",
-  );
+  const isModal = props.mode !== "PAGE";
+  const [view, setView] = useState<View>("SIGN_IN");
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState(isModal ? (props.defaultEmail ?? "") : "");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [message, setMessage] = useState("");
+  const [messageKind, setMessageKind] = useState<"ERROR" | "STATUS">("STATUS");
   const [busy, setBusy] = useState(false);
-  const modalOnClose =
-    props.mode === "CHECKOUT_MODAL" ? props.onClose : undefined;
+  const modalOnClose = isModal ? props.onClose : undefined;
 
   useEffect(() => {
     if (!modalOnClose) return;
@@ -39,8 +45,8 @@ export function CustomerLogin(props: Props) {
         ),
       );
       if (!focusable.length) return;
-      const first = focusable[0],
-        last = focusable[focusable.length - 1];
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
       if (event.shiftKey && document.activeElement === first) {
         event.preventDefault();
         last.focus();
@@ -61,6 +67,21 @@ export function CustomerLogin(props: Props) {
     };
   }, [modalOnClose]);
 
+  function changeView(next: View) {
+    setView(next);
+    setMessage("");
+    setMessageKind("STATUS");
+    setPassword("");
+    setShowPassword(false);
+    requestAnimationFrame(() =>
+      panel.current
+        ?.querySelector<HTMLInputElement>(
+          next === "REGISTER" ? 'input[name="name"]' : 'input[type="email"]',
+        )
+        ?.focus(),
+    );
+  }
+
   async function login(event: FormEvent) {
     event.preventDefault();
     setBusy(true);
@@ -74,7 +95,7 @@ export function CustomerLogin(props: Props) {
       const value = await response.json();
       if (!response.ok)
         throw new Error(value.message ?? "Email or password is incorrect.");
-      if (props.mode === "CHECKOUT_MODAL") {
+      if (isModal) {
         await props.onSuccess();
         props.onClose();
       } else {
@@ -89,107 +110,263 @@ export function CustomerLogin(props: Props) {
         router.refresh();
       }
     } catch (error) {
+      setMessageKind("ERROR");
       setMessage(error instanceof Error ? error.message : "Login failed.");
     } finally {
       setBusy(false);
     }
   }
 
+  async function register(event: FormEvent) {
+    event.preventDefault();
+    setBusy(true);
+    setMessage("");
+    try {
+      const response = await fetch("/api/account/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email }),
+      });
+      const value = await response.json();
+      if (!response.ok)
+        throw new Error(value.message ?? "Registration failed.");
+      setMessageKind("STATUS");
+      setMessage(
+        value.message ??
+          "If this email can be registered, an activation link will arrive shortly.",
+      );
+    } catch (error) {
+      setMessageKind("ERROR");
+      setMessage(
+        error instanceof Error ? error.message : "Registration failed.",
+      );
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function forgotPassword(event: FormEvent) {
+    event.preventDefault();
+    setBusy(true);
+    setMessage("");
+    try {
+      const response = await fetch("/api/account/password-reset", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      const value = await response
+        .json()
+        .catch(() => ({ message: "Password reset is unavailable." }));
+      if (!response.ok)
+        throw new Error(value.message ?? "Password reset is unavailable.");
+      setMessageKind("STATUS");
+      setMessage(
+        value.message ??
+          "If an active account exists, a reset link will arrive shortly.",
+      );
+    } catch (error) {
+      setMessageKind("ERROR");
+      setMessage(
+        error instanceof Error
+          ? error.message
+          : "Password reset is unavailable.",
+      );
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  const heading =
+    view === "SIGN_IN"
+      ? "Welcome back"
+      : view === "REGISTER"
+        ? "Create an account"
+        : "Reset your password";
+  const description =
+    view === "SIGN_IN"
+      ? props.mode === "CHECKOUT_MODAL"
+        ? "Sign in to continue your checkout, access member benefits and use your saved details."
+        : "Sign in to view your orders, cashback and customer account."
+      : view === "REGISTER"
+        ? "Use the same membership and rewards in store and online."
+        : "Enter your email and we will send a secure reset link if an active account exists.";
+
+  const feedback = message && (
+    <p
+      className={messageKind === "ERROR" ? "sf-login-error" : "sf-login-status"}
+      role={messageKind === "ERROR" ? "alert" : "status"}
+    >
+      {message}
+    </p>
+  );
+
   const content = (
     <div
       ref={panel}
-      className={`sf-login-card ${props.mode === "CHECKOUT_MODAL" ? "sf-login-card--modal" : ""}`}
-      role={props.mode === "CHECKOUT_MODAL" ? "dialog" : undefined}
-      aria-modal={props.mode === "CHECKOUT_MODAL" ? true : undefined}
+      className={`sf-login-card ${isModal ? "sf-login-card--modal" : ""}`}
+      role={isModal ? "dialog" : undefined}
+      aria-modal={isModal ? true : undefined}
       aria-labelledby="customer-login-title"
     >
-      {props.mode === "CHECKOUT_MODAL" && (
+      {isModal && (
         <button
           className="sf-login-close"
           type="button"
-          aria-label="Close sign in"
+          aria-label="Close customer account"
           onClick={props.onClose}
         >
           ×
         </button>
       )}
-      <span className="sf-login-brand">
-        CUSTOMER <span>ACCOUNT</span>
-      </span>
-      <h1 id="customer-login-title">Welcome back</h1>
-      <p>
-        {props.mode === "CHECKOUT_MODAL"
-          ? "Sign in to continue your checkout, access member benefits and use your saved details."
-          : "Sign in to view your orders, cashback and customer account."}
-      </p>
-      <form onSubmit={login}>
-        <label>
-          Email address
-          <input
-            required
-            type="email"
-            autoComplete="email"
-            placeholder="name@example.com"
-            value={email}
-            onChange={(event) => setEmail(event.target.value)}
-          />
-        </label>
-        <label>
-          Password
-          <span className="sf-password-field">
+      <h1 id="customer-login-title">{heading}</h1>
+      <p>{description}</p>
+
+      {view === "SIGN_IN" && (
+        <>
+          <form onSubmit={login}>
+            <label>
+              Email address
+              <input
+                required
+                type="email"
+                autoComplete="email"
+                placeholder="name@example.com"
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+              />
+            </label>
+            <label>
+              Password
+              <span className="sf-password-field">
+                <input
+                  required
+                  type={showPassword ? "text" : "password"}
+                  autoComplete="current-password"
+                  placeholder="Enter your password"
+                  value={password}
+                  onChange={(event) => setPassword(event.target.value)}
+                />
+                <button
+                  type="button"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                  onClick={() => setShowPassword((current) => !current)}
+                >
+                  {showPassword ? "Hide" : "Show"}
+                </button>
+              </span>
+            </label>
+            <button
+              className="sf-login-link"
+              type="button"
+              onClick={() => changeView("FORGOT_PASSWORD")}
+            >
+              Forgot password?
+            </button>
+            {feedback}
+            <button className="sf-login-submit" disabled={busy} type="submit">
+              {busy ? "Signing in…" : "Sign in →"}
+            </button>
+          </form>
+          <div className="sf-login-divider">
+            <span>or</span>
+          </div>
+          {props.mode === "CHECKOUT_MODAL" && (
+            <button
+              className="sf-login-secondary"
+              type="button"
+              onClick={() => void props.onGuest()}
+            >
+              Continue as guest
+            </button>
+          )}
+          <div className="sf-login-new">
+            <strong>New to this store?</strong>
+            <button
+              className="sf-login-secondary"
+              type="button"
+              onClick={() => changeView("REGISTER")}
+            >
+              Create an account
+            </button>
+          </div>
+        </>
+      )}
+
+      {view === "REGISTER" && (
+        <form onSubmit={register}>
+          <label>
+            Name
             <input
               required
-              type={showPassword ? "text" : "password"}
-              autoComplete="current-password"
-              placeholder="Enter your password"
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
+              name="name"
+              autoComplete="name"
+              maxLength={160}
+              value={name}
+              onChange={(event) => setName(event.target.value)}
             />
-            <button
-              type="button"
-              aria-label={showPassword ? "Hide password" : "Show password"}
-              onClick={() => setShowPassword((current) => !current)}
-            >
-              {showPassword ? "Hide" : "Show"}
-            </button>
-          </span>
-        </label>
-        <Link className="sf-login-forgot" href="/account/forgot-password">
-          Forgot password?
-        </Link>
-        {message && (
-          <p className="sf-login-error" role="alert">
-            {message}
-          </p>
-        )}
-        <button className="sf-login-submit" disabled={busy} type="submit">
-          {busy ? "Signing in…" : "Sign in →"}
-        </button>
-      </form>
-      <div className="sf-login-divider">
-        <span>or</span>
-      </div>
-      {props.mode === "CHECKOUT_MODAL" ? (
-        <button
-          className="sf-login-secondary"
-          type="button"
-          onClick={() => void props.onGuest()}
-        >
-          Continue as guest
-        </button>
-      ) : (
-        <div className="sf-login-new">
-          <strong>New to this store?</strong>
-          <Link className="sf-login-secondary" href="/account/register">
-            Create an account
-          </Link>
-        </div>
+          </label>
+          <label>
+            Email address
+            <input
+              required
+              type="email"
+              autoComplete="email"
+              maxLength={254}
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+            />
+          </label>
+          {feedback}
+          <button className="sf-login-submit" disabled={busy} type="submit">
+            {busy ? "Sending activation…" : "Create account"}
+          </button>
+          <small>
+            We will email a secure activation link. Registration does not
+            subscribe you to marketing.
+          </small>
+          <button
+            className="sf-login-link sf-login-link--back"
+            type="button"
+            onClick={() => changeView("SIGN_IN")}
+          >
+            Back to sign in
+          </button>
+        </form>
       )}
+
+      {view === "FORGOT_PASSWORD" && (
+        <form onSubmit={forgotPassword}>
+          <label>
+            Email address
+            <input
+              required
+              type="email"
+              autoComplete="email"
+              maxLength={254}
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+            />
+          </label>
+          {feedback}
+          <button className="sf-login-submit" disabled={busy} type="submit">
+            {busy ? "Sending…" : "Send reset link"}
+          </button>
+          <button
+            className="sf-login-link sf-login-link--back"
+            type="button"
+            onClick={() => changeView("SIGN_IN")}
+          >
+            Back to sign in
+          </button>
+        </form>
+      )}
+
       <small className="sf-login-secure">Secure sign in</small>
     </div>
   );
 
-  return props.mode === "CHECKOUT_MODAL" ? (
+  return isModal ? (
     <div
       className="sf-login-backdrop"
       onMouseDown={(event) => {
@@ -199,7 +376,7 @@ export function CustomerLogin(props: Props) {
       {content}
     </div>
   ) : (
-    <main className="sf-width sf-login-page">
+    <section className="sf-width sf-login-page">
       <section>{content}</section>
       <aside>
         <span className="sf-eyebrow">MEMBER BENEFITS</span>
@@ -214,6 +391,6 @@ export function CustomerLogin(props: Props) {
           <li>Checkout faster next time</li>
         </ul>
       </aside>
-    </main>
+    </section>
   );
 }

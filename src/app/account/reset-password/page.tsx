@@ -35,8 +35,7 @@ export default function ResetPasswordPage() {
     setBusy(false);
   }
   return (
-    <main className="sf-width sf-account-activation">
-      <span className="sf-eyebrow">CUSTOMER ACCOUNT</span>
+    <section className="sf-width sf-account-activation">
       <h1>Choose a new password</h1>
       <p>
         Use at least 10 characters with upper-case, lower-case and a number.
@@ -67,6 +66,6 @@ export default function ResetPasswordPage() {
           {busy ? "Updating…" : "Set new password"}
         </button>
       </form>
-    </main>
+    </section>
   );
 }

@@ -22,8 +22,7 @@ export default function ForgotPasswordPage() {
     setBusy(false);
   }
   return (
-    <main className="sf-width sf-account-activation">
-      <span className="sf-eyebrow">CUSTOMER ACCOUNT</span>
+    <section className="sf-width sf-account-activation">
       <h1>Reset your password</h1>
       <p>
         Enter your account email and we will send a secure reset link if an
@@ -46,6 +45,6 @@ export default function ForgotPasswordPage() {
         </button>
         <Link href="/account/login">Return to sign in</Link>
       </form>
-    </main>
+    </section>
   );
 }

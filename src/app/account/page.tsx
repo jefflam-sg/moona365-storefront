@@ -43,7 +43,7 @@ export default function CustomerAccountPage() {
     router.replace("/");
   };
   return (
-    <main className="sf-width sf-customer-account">
+    <section className="sf-width sf-customer-account">
       <header>
         <div>
           <span className="sf-eyebrow">YOUR ACCOUNT</span>
@@ -111,6 +111,6 @@ export default function CustomerAccountPage() {
           )}
         </section>
       )}
-    </main>
+    </section>
   );
 }
