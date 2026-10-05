@@ -580,7 +580,7 @@ export function CheckoutContent() {
             </div>
           </fieldset>
           <fieldset>
-            <legend>Buyer address</legend>
+            <legend>Address</legend>
             <p>
               This address will be used for this order and as your
               account&apos;s default delivery address.
