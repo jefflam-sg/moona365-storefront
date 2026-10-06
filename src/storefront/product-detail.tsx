@@ -100,6 +100,7 @@ export function ProductDetail({ product, initialVariantId, recommendations = [],
   const [notice, setNotice] = useState("");
   const [fullScreen, setFullScreen] = useState(false);
   const selectedVariant = product.variants.find((variant) => variant.id === selectedVariantId);
+  const maximumOrderQuantity = selectedVariant?.maximumOrderQuantity ?? 99;
   const images = useMemo(() => {
     const values: ProductImage[] = [];
     const add = (image: ProductImage | null | undefined) => {
@@ -145,7 +146,7 @@ export function ProductDetail({ product, initialVariantId, recommendations = [],
   const add = async () => {
     if (!selectedVariant) { setNotice(`Please select ${product.variantOptionName || "an option"}.`); return; }
     if (!selectedVariant.purchasable) { setNotice("This option is currently unavailable."); return; }
-    try { await addCartLine(product.id, selectedVariant.id, quantity); setNotice("Added to cart."); }
+    try { await addCartLine(product.id, selectedVariant.id, Math.min(quantity, maximumOrderQuantity)); setNotice("Added to cart."); }
     catch { setNotice("We could not add this option. Please try again."); }
   };
   const moveImage = (direction: -1 | 1) => {
@@ -188,7 +189,7 @@ export function ProductDetail({ product, initialVariantId, recommendations = [],
         {product.shortDescription && <p className="sf-pdp-short-description">{product.shortDescription}</p>}
         <strong className="sf-pdp-price">{productPrice(product, selectedVariant)}</strong>
         {product.variants.length > 0 && <fieldset className={`sf-pdp-options ${notice.startsWith("Please") ? "has-missing" : ""}`}><legend>{product.variantOptionName || "Choose an option"}</legend><div>{product.variants.map((variant) => <button type="button" key={variant.id} disabled={!variant.purchasable} aria-pressed={selectedVariantId === variant.id} onClick={() => chooseVariant(variant)}><b>{variant.label || "Standard"}</b></button>)}</div>{product.variants.length > 1 && selectedVariant && <button className="sf-pdp-clear" type="button" onClick={clearVariant}>Clear selection</button>}</fieldset>}
-        <div className="sf-pdp-quantity"><span>Quantity</span><div><button type="button" aria-label="Decrease quantity" onClick={() => setQuantity((value) => Math.max(1, value - 1))}>−</button><input aria-label="Quantity" type="number" inputMode="numeric" min="1" max="99" value={quantity} onFocus={(event) => event.currentTarget.select()} onChange={(event) => setQuantity(Math.min(99, Math.max(1, Number(event.target.value) || 1)))} /><button type="button" aria-label="Increase quantity" onClick={() => setQuantity((value) => Math.min(99, value + 1))}>+</button></div></div>
+        <div className="sf-pdp-quantity"><span>Quantity</span><div><button type="button" aria-label="Decrease quantity" onClick={() => setQuantity((value) => Math.max(1, value - 1))}>−</button><input aria-label="Quantity" type="number" inputMode="numeric" min="1" max={maximumOrderQuantity} value={Math.min(quantity, maximumOrderQuantity)} onFocus={(event) => event.currentTarget.select()} onChange={(event) => setQuantity(Math.min(maximumOrderQuantity, Math.max(1, Number(event.target.value) || 1)))} /><button type="button" aria-label="Increase quantity" disabled={quantity >= maximumOrderQuantity} onClick={() => setQuantity((value) => Math.min(maximumOrderQuantity, value + 1))}>+</button></div></div>
         <p className="sf-pdp-stock" data-available={Boolean(selectedVariant?.purchasable)}>{selectedVariant ? (selectedVariant.purchasable ? "● In stock" : "Sold out") : `Select ${product.variantOptionName || "an option"} to see availability`}</p>
         <div className="sf-pdp-actions"><button type="button" onClick={add} disabled={Boolean(selectedVariant && !selectedVariant.purchasable)}>Add to Cart</button><button type="button" className="sf-pdp-wishlist" aria-pressed={wishlisted} onClick={() => setWishlisted(toggleWishlist(product.id))}>{wishlisted ? "♥ Saved to Wishlist" : "♡ Add to Wishlist"}</button></div>
         {notice && <p className="sf-pdp-notice" role="status">{notice}</p>}

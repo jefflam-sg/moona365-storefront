@@ -352,6 +352,7 @@ export type PublicProduct = {
     primaryImage?: (BrandAsset & { mediaAssetId: string }) | null;
     price: { amount: string; currency: string };
     compareAtPrice?: { amount: string; currency: string } | null;
+    maximumOrderQuantity: number;
     availability: "AVAILABLE" | "SOLD_OUT" | "UNAVAILABLE";
     purchasable: boolean;
   }>;
