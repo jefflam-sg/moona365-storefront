@@ -13,12 +13,15 @@ const validVariant = (variant) => {
   const legacyKeys = ["id", "label", "price", "availability", "purchasable"];
   const imageKeys = ["id", "label", "primaryImage", "price", "availability", "purchasable"];
   const commerceKeys = [...imageKeys, "compareAtPrice"];
-  return (exact(variant, legacyKeys) || exact(variant, imageKeys) || exact(variant, commerceKeys)) &&
+  const orderingRulesKeys = [...commerceKeys, "maximumOrderQuantity"];
+  return (exact(variant, legacyKeys) || exact(variant, imageKeys) || exact(variant, commerceKeys) || exact(variant, orderingRulesKeys)) &&
     text(variant.id) && text(variant.label) &&
     (!Object.hasOwn(variant, "primaryImage") || validVariantImage(variant.primaryImage)) &&
     exact(variant.price, ["amount", "currency"]) && text(variant.price.amount) && text(variant.price.currency) &&
     (!Object.hasOwn(variant, "compareAtPrice") || variant.compareAtPrice === null ||
       (exact(variant.compareAtPrice, ["amount", "currency"]) && text(variant.compareAtPrice.amount) && text(variant.compareAtPrice.currency))) &&
+    (!Object.hasOwn(variant, "maximumOrderQuantity") ||
+      (Number.isSafeInteger(variant.maximumOrderQuantity) && variant.maximumOrderQuantity >= 1)) &&
     ["AVAILABLE", "SOLD_OUT", "UNAVAILABLE"].includes(variant.availability) && typeof variant.purchasable === "boolean";
 };
 const specificationIcons = new Set(["info", "globe", "leaf", "nutrition", "storage", "package", "ruler", "shield", "heart-leaf", "book-open", "ingredient-bowl"]);

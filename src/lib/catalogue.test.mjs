@@ -53,6 +53,11 @@ test("validates bounded public catalogue responses and rejects private fields", 
   Object.assign(commerceResponse.products[0], { variantOptionName: "Pack size", isNew: true });
   commerceResponse.products[0].variants[0].compareAtPrice = { amount: "9.50", currency: "SGD" };
   assert.equal(isProductsResponse(commerceResponse, host), true);
+  const orderingRulesResponse = structuredClone(commerceResponse);
+  orderingRulesResponse.products[0].variants[0].maximumOrderQuantity = 12;
+  assert.equal(isProductsResponse(orderingRulesResponse, host), true);
+  orderingRulesResponse.products[0].variants[0].maximumOrderQuantity = 0;
+  assert.equal(isProductsResponse(orderingRulesResponse, host), false);
   const targetedResponse = structuredClone(commerceResponse);
   targetedResponse.products[0].selectedVariantId = "v1";
   assert.equal(isProductsResponse(targetedResponse, host), true);
