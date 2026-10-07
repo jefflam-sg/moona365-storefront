@@ -149,7 +149,7 @@ export function CheckoutContent() {
   const [validation, setValidation] = useState<Record<string, string>>({});
   const [result, setResult] = useState<BeginResult | null>(null),
     [stripe, setStripe] = useState<PromiseLike<Stripe | null> | null>(null),
-    [idempotencyKey] = useState(requestId);
+    [idempotencyKey, setIdempotencyKey] = useState(requestId);
 
   useEffect(() => {
     void loadCart()
@@ -330,6 +330,37 @@ export function CheckoutContent() {
     }
   }
 
+  async function editCart() {
+    if (busy) return;
+    setBusy(true);
+    setError("");
+    try {
+      const response = await fetch("/api/checkout", { method: "DELETE" });
+      const value = await response
+        .json()
+        .catch(() => ({ message: "Checkout could not be restarted." }));
+      if (!response.ok) {
+        if (value?.details?.reason === "CHECKOUT_ALREADY_PAID") {
+          window.location.assign("/checkout/confirmation");
+          return;
+        }
+        throw new Error(value?.message ?? "Checkout could not be restarted.");
+      }
+      setResult(null);
+      setStripe(null);
+      setIdempotencyKey(requestId());
+      window.location.assign("/cart");
+    } catch (caught) {
+      setError(
+        caught instanceof Error
+          ? caught.message
+          : "Checkout could not be restarted.",
+      );
+    } finally {
+      setBusy(false);
+    }
+  }
+
   if (!cart) return <p className="sf-cart-loading">Loading checkout…</p>;
   if (!cart.cartReadyForCheckout)
     return (
@@ -342,6 +373,7 @@ export function CheckoutContent() {
   if (result && stripe && options)
     return (
       <section className="sf-checkout-page">
+        {error && <p className="sf-checkout-error">{error}</p>}
         <div className="sf-checkout-layout">
           <Elements stripe={stripe} options={options}>
             <PaymentForm checkout={result.checkout} />
@@ -350,6 +382,8 @@ export function CheckoutContent() {
             cart={cart}
             method={result.checkout.fulfillmentMethod}
             checkout={result.checkout}
+            onEditCart={editCart}
+            editBusy={busy}
           />
         </div>
       </section>
@@ -931,7 +965,12 @@ export function CheckoutContent() {
           </button>
         </form>
         <div className="sf-checkout-summary-column">
-          <CheckoutSummary cart={cart} method={method} />
+          <CheckoutSummary
+            cart={cart}
+            method={method}
+            onEditCart={editCart}
+            editBusy={busy}
+          />
           <div className="sf-checkout-trust">
             <span>🔒 Secure payment by Stripe</span>
             <span>✉ Order confirmation by email</span>
@@ -946,10 +985,14 @@ function CheckoutSummary({
   cart,
   method,
   checkout,
+  onEditCart,
+  editBusy = false,
 }: {
   cart: WebsiteCart;
   method: "DELIVERY" | "PICKUP";
   checkout?: CheckoutBreakdown;
+  onEditCart?: () => Promise<void>;
+  editBusy?: boolean;
 }) {
   const deliveryFee =
     checkout?.deliveryFee ??
@@ -969,7 +1012,18 @@ function CheckoutSummary({
       <header>
         <h2>Order summary</h2>
         <span>({cart.itemCount} items)</span>
-        <Link href="/cart">Edit cart</Link>
+        {onEditCart ? (
+          <button
+            type="button"
+            className="sf-checkout-edit-cart"
+            disabled={editBusy}
+            onClick={() => void onEditCart()}
+          >
+            {editBusy ? "Closing checkout…" : "Edit cart"}
+          </button>
+        ) : (
+          <Link href="/cart">Edit cart</Link>
+        )}
       </header>
       {cart.lines.map((line) => (
         <div className="sf-checkout-summary-line" key={line.lineId}>

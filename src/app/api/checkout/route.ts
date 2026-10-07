@@ -143,3 +143,68 @@ export async function GET(request: Request) {
     );
   }
 }
+
+export async function DELETE(request: Request) {
+  const base = api();
+  const host = hostOf(request);
+  const checkoutToken = cookie(request, CHECKOUT_COOKIE);
+  const cartToken = cookie(request, CART_COOKIE);
+  if (!base || !host || (!checkoutToken && !cartToken))
+    return NextResponse.json(
+      { message: "Checkout not found." },
+      { status: 404 },
+    );
+  const origin = request.headers.get("origin");
+  if (origin) {
+    try {
+      if (new URL(origin).host !== host)
+        return NextResponse.json(
+          { message: "Invalid checkout request." },
+          { status: 403 },
+        );
+    } catch {
+      return NextResponse.json(
+        { message: "Invalid checkout request." },
+        { status: 403 },
+      );
+    }
+  }
+  try {
+    const response = await fetch(
+      `${base}/public/storefront/v1/checkout/cancel`,
+      {
+        method: "POST",
+        cache: "no-store",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          ...storefrontProxyHeaders(request),
+        },
+        body: JSON.stringify({
+          host,
+          checkoutToken: checkoutToken
+            ? decodeURIComponent(checkoutToken)
+            : null,
+          cartToken: cartToken ? decodeURIComponent(cartToken) : null,
+        }),
+      },
+    );
+    const missing = response.status === 404;
+    const value = missing
+      ? { canceled: true }
+      : await response
+          .json()
+          .catch(() => ({ message: "Checkout could not be restarted." }));
+    const result = NextResponse.json(value, {
+      status: missing ? 200 : response.status,
+      headers: { "Cache-Control": "private, no-store" },
+    });
+    if (response.ok || missing) result.cookies.delete(CHECKOUT_COOKIE);
+    return result;
+  } catch {
+    return NextResponse.json(
+      { message: "Checkout could not be restarted." },
+      { status: 503 },
+    );
+  }
+}
