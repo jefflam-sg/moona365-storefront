@@ -112,13 +112,19 @@ export async function GET(request: Request) {
     );
   try {
     const response = await fetch(
-      `${base}/public/storefront/v1/checkout/status?host=${encodeURIComponent(host)}&checkoutToken=${encodeURIComponent(decodeURIComponent(checkoutToken))}`,
+      `${base}/public/storefront/v1/checkout/status`,
       {
+        method: "POST",
         cache: "no-store",
         headers: {
+          "Content-Type": "application/json",
           Accept: "application/json",
           ...storefrontProxyHeaders(request),
         },
+        body: JSON.stringify({
+          host,
+          checkoutToken: decodeURIComponent(checkoutToken),
+        }),
       },
     );
     return NextResponse.json(
