@@ -1056,7 +1056,7 @@ export function CheckoutConfirmation() {
         if (!active) return;
         setState(value.checkout);
         if (
-          !["PAID", "PAYMENT_FAILED", "ACTION_REQUIRED"].includes(
+          !["PAID", "PAYMENT_FAILED", "ACTION_REQUIRED", "EXPIRED"].includes(
             value.checkout.status,
           )
         )
