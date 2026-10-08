@@ -21,7 +21,8 @@ const validVariant = (variant) => {
     (!Object.hasOwn(variant, "compareAtPrice") || variant.compareAtPrice === null ||
       (exact(variant.compareAtPrice, ["amount", "currency"]) && text(variant.compareAtPrice.amount) && text(variant.compareAtPrice.currency))) &&
     (!Object.hasOwn(variant, "maximumOrderQuantity") ||
-      (Number.isSafeInteger(variant.maximumOrderQuantity) && variant.maximumOrderQuantity >= 1)) &&
+      (Number.isSafeInteger(variant.maximumOrderQuantity) && variant.maximumOrderQuantity >= 0 &&
+       (variant.maximumOrderQuantity > 0 || (variant.availability !== "AVAILABLE" && variant.purchasable === false)))) &&
     ["AVAILABLE", "SOLD_OUT", "UNAVAILABLE"].includes(variant.availability) && typeof variant.purchasable === "boolean";
 };
 const specificationIcons = new Set(["info", "globe", "leaf", "nutrition", "storage", "package", "ruler", "shield", "heart-leaf", "book-open", "ingredient-bowl"]);
